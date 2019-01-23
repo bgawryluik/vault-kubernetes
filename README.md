@@ -20,6 +20,9 @@ $ brew cask install minikube
 #### Ubuntu 18.04
 I just followed the instructions listed here: [How to Install Minikube on Ubuntu 18.04](https://computingforgeeks.com/how-to-install-minikube-on-ubuntu-18-04/).
 
+### Hashicorp's Consul client
+Follow the instructions listed [here](https://www.consul.io/docs/install/index.html). The original blog post recommends `v1.4.0`.
+
 ### The Go Programming Language
 The blog post has great instructions for installing Go on a Mac. Google has plenty of instructions for every other OS. Just make certain that you remember to set you `GOPATH` variable.  
 

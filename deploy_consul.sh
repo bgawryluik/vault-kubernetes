@@ -1,18 +1,10 @@
 #!/bin/bash
 
-# Script Variables
-
-# ---------------
-# Main Processing
-# ---------------
-
 # Ensure minikube is running or exit
 if ! minikube status | grep Running &> /dev/null; then
     echo "ERROR: minicube is NOT running. Please run 'minikube start'"
     exit 1
 fi
-
-echo "Deploying Consul..."
 
 # ------------------------------
 # Generate Gossip Encryption Key

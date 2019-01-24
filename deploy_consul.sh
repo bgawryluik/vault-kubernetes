@@ -78,6 +78,19 @@ fi
 if ! kubectl get pods | grep consul &> /dev/null; then
     printf "\nCreating Consul StatefulSet...\n"
     kubectl create -f consul/statefulset.yaml
+
+    # Wait for Consul pods to launch
+    sleep 5
+    POD=$(kubectl get pods -o=name | grep consul-0 | sed "s/^.\{4\}//")
+    while true; do
+        STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
+        if [ "$STATUS" == "Running" ]; then
+            break
+        else
+            echo "Pod status is: ${STATUS}"
+            sleep 5
+        fi
+    done
 else
     printf "\nConsul StatefulSet: already created\n"
 fi

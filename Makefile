@@ -1,8 +1,8 @@
 SHELL = /bin/bash
 
-.PHONY: workstation certs consul vault clean forward kubestart kubestop
+.PHONY: workstation certs consul vault clean forward kubestart kubestop destroy
 
-workstation: certs consul vault
+workstation: kubestart certs consul vault forward
 
 certs:
 	$(info Creating certificates...)
@@ -31,3 +31,7 @@ kubestart:
 clean:
 	$(info Deleting certificates...)
 	rm -rfv certs
+	
+destroy: clean
+	$(info Destroying the cluster...)
+	minikube delete

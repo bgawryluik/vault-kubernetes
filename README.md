@@ -146,3 +146,5 @@ $ vault status
 ```
 
 TODO restarted minikube and had to unseal again and previous secrets were lost. How to fix that?
+TODO load balancer so that we can use consul, too
+TODO terminate real cert for UIs

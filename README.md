@@ -145,6 +145,6 @@ Then export `VAULT_ADDR` and `VAULT_CACERT` environment variables in another ter
 $ vault status
 ```
 
-TODO restarted minikube and had to unseal again and previous secrets were lost. How to fix that?
-TODO load balancer so that we can use consul, too
-TODO terminate real cert for UIs
+TODO restarted minikube and had to unseal again and previous secrets were lost. How to fix that?  
+TODO load balancer so that we can use consul, too  
+TODO terminate real cert for UIs  

@@ -5,6 +5,10 @@ Based on the blog [post](https://testdriven.io/blog/running-vault-and-consul-on-
 
 ## Requirements
 
+### Docker v18.09.0
+
+### Kubernetes v1.10.0
+
 ### Minikube
 
 [Minikube](https://kubernetes.io/docs/setup/minikube/) is a single-node kubernetes cluster that is used to test the Kubernetes API running K8s applications on your workstation. This is how you run it using VirtualBox as your Hypervisor.
@@ -61,7 +65,9 @@ $ make certs
 ```
 
 ### Deploy Consul
-... TODO
+```
+$ make consul
+```
 
 ### Deploy Vault
 ... TODO

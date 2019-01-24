@@ -78,3 +78,23 @@ if ! kubectl get service consul &> /dev/null; then
 else
     echo "Consul Service looks good"
 fi
+
+
+# ----------------------
+# Create the StatefulSet
+# ----------------------
+if ! kubectl get pods | grep consul &> /dev/null; then
+    printf "\nCreating Consul StatefulSet...\n"
+    kubectl create -f consul/statefulset.yaml
+else
+    printf "\nConsul StatefulSet: already created\n"
+fi
+
+# Consul StatefulSet Sanity
+echo "Testing to see if the Consul StatefulSet is sane..."
+if ! kubectl get pods | grep consul &> /dev/null; then
+    echo "ERROR: can't find Consul Pods!"
+    exit 1
+else
+    echo "Consul Pods look good"
+fi

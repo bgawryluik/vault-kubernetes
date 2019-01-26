@@ -1,105 +1,157 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Ensure minikube is running or exit
-if ! minikube status | grep Running &> /dev/null; then
-    echo "ERROR: minicube is NOT running. Please run 'minikube start'"
-    exit 1
-fi
+# DESC: Generates Gossip Encryption Key
+# ARGS: $1 (REQ): Cert dir
+#       $2 (REQ): Application Name
+# OUT: None
+function gossip_encryption_key() {
+    if [[ $# -lt 2 ]]; then
+        printf "\nERROR: Missing 2 args for gossip_encryption_key()\n"
+        exit -2
+    fi
 
-# ------------------------------
-# Generate Gossip Encryption Key
-# ------------------------------
-if ! kubectl get secrets | grep 'consul ' &> /dev/null; then
-    printf "\nGenerating Gossip Encryption Key...\n"
-    export GOSSIP_ENCRYPTION_KEY=$(consul keygen)
+    if ! kubectl get secrets | grep ${2} > /dev/null 2>&1; then
+        export GOSSIP_ENCRYPTION_KEY=$(consul keygen)
 
-    kubectl create secret generic consul \
-      --from-literal="gossip-encryption-key=${GOSSIP_ENCRYPTION_KEY}" \
-      --from-file=certs/ca.pem \
-      --from-file=certs/consul.pem \
-      --from-file=certs/consul-key.pem
-else
-    printf "\nGossip Encryption Key: already created\n"
-fi
+        kubectl create secret generic consul \
+            --from-literal="gossip-encryption-key=${GOSSIP_ENCRYPTION_KEY}" \
+            --from-file=${1}/ca.pem \
+            --from-file=${1}/${2}.pem \
+            --from-file=${1}/${2}-key.pem
 
-# Gossip Encryption Key Sanity
-echo "Testing to make certain that the Gossip Encryption Key is sane..."
-if ! kubectl describe secret consul &> /dev/null; then
-    echo "ERROR: can't find the Gossip Encryption Key!"
-    exit 1
-else
-    echo "Gossip Encryption Key looks good"
-fi
+        printf "... Gossip Encryption Key created\n"
+    else
+        printf "... Gossip Encryption Key is already created\n"
+    fi
 
-
-# ----------------
-# Create ConfigMap
-# ----------------
-if ! kubectl get configmaps | grep 'consul ' &> /dev/null; then
-    printf "\nCreating Consul ConfigMap...\n"
-    kubectl create configmap consul --from-file=consul/config.json
-else
-    printf "\nConsul ConfigMap: already created\n"
-fi
-
-# Consul ConfigMap Sanity
-echo "Testing to see if the Consul ConfigMap is sane..."
-if ! kubectl describe configmap consul &> /dev/null; then
-    echo "ERROR: can't find Consul ConfigMap!"
-    exit 1
-else
-    echo "Consul ConfigMap looks good"
-fi
+    # Gossip Encryption Key Sanity
+    printf "Testing to see if the Gossip Encryption Key is sane...\n"
+    if ! kubectl describe secret ${2} > /dev/null 2>&1; then
+        printf "ERROR: can't find the Gossip Encryption Key!\n"
+        exit 1
+    else
+        printf "Gossip Encryption Key looks good\n"
+    fi
+}
 
 
-# ------------------
-# Create the Service
-# ------------------
-if ! kubectl get service consul | grep consul &> /dev/null; then
-    printf "\nCreating Consul Service...\n"
-    kubectl create -f consul/service.yaml
-else
-    printf "\nConsul Service: already created\n"
-fi
+# DESC: Creates a k8s ConfigMap
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_configmap() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_configmap()\n"
+        exit -2
+    fi
 
-# Consul Service Sanity
-echo "Testing to see if the Consul Service is sane..."
-if ! kubectl get service consul &> /dev/null; then
-    echo "ERROR: can't find Consul Service!"
-    exit 1
-else
-    echo "Consul Service looks good"
-fi
+    if ! kubectl get configmaps | grep ${1} > /dev/null 2>&1; then
+        kubectl create configmap ${1} --from-file=${1}/config.json
+        printf "... ${1} ConfigMap created\n"
+    else
+        printf "... ${1} ConfigMap is already created\n"
+    fi
+
+    # K8s ConfigMap Sanity
+    printf "Testing to see if the ${1} ConfigMap is sane...\n"
+    if ! kubectl describe configmap ${1} > /dev/null 2>&1; then
+        printf "ERROR: can't find the ${1} ConfigMap!\n"
+        exit 1
+    else
+        printf "${1} ConfigMap looks good\n"
+    fi
+}
 
 
-# ----------------------
-# Create the StatefulSet
-# ----------------------
-if ! kubectl get pods | grep consul &> /dev/null; then
-    printf "\nCreating Consul StatefulSet...\n"
-    kubectl create -f consul/statefulset.yaml
+# DESC: Creates a k8s Service
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_service() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_service()\n"
+        exit -2
+    fi
 
-    # Wait for Consul pods to launch
-    sleep 5
-    POD=$(kubectl get pods -o=name | grep consul-0 | sed "s/^.\{4\}//")
-    while true; do
-        STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
-        if [ "$STATUS" == "Running" ]; then
-            break
-        else
-            echo "Pod status is: ${STATUS}"
-            sleep 5
-        fi
-    done
-else
-    printf "\nConsul StatefulSet: already created\n"
-fi
+    if ! kubectl get service ${1} | grep ${1} > /dev/null 2>&1; then
+        kubectl create -f ${1}/service.yaml
+        printf "... ${1} Service created\n"
+    else
+        printf "... ${1} Service is already created\n"
+    fi
 
-# Consul StatefulSet Sanity
-echo "Testing to see if the Consul StatefulSet is sane..."
-if ! kubectl get pods | grep consul &> /dev/null; then
-    echo "ERROR: can't find Consul Pods!"
-    exit 1
-else
-    echo "Consul Pods look good"
-fi
+    # K8s Service Sanity
+    printf "Testing to see if the ${1} Service is sane...\n"
+    if ! kubectl get service ${1} > /dev/null 2>&1; then
+        printf "ERROR: can't find the ${1} Service!\n"
+        exit 1
+    else
+        printf "${1} Service looks good\n"
+    fi
+}
+
+
+# DESC: Creates a k8s StatefulSet
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_statefulset() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_statefulset()\n"
+        exit -2
+    fi
+
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+        kubectl create -f ${1}/statefulset.yaml
+        printf "... ${1} StatefulSet created\n"
+
+        # Wait for pods to launch
+        printf "... waiting for ${1} pods to launch\n"
+        sleep 10
+        POD=$(kubectl get pods -o=name | grep ${1}-0 | sed "s/^.\{4\}//")
+        while true; do
+            STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
+            if [ "$STATUS" == "Running" ]; then
+                break
+            else
+                printf "Pod status is: ${STATUS}\n"
+                sleep 5
+            fi
+        done
+    else
+        printf "... ${1} StatefulSet is already created\n"
+    fi
+
+    # K8s StatefulSet Sanity
+    printf "Testing to see if the ${1} StatefulSet is sane...\n"
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+        printf "ERROR: can't find ${1} Pods!\n"
+        exit 1
+    else
+        printf "${1} Pods look good\n"
+    fi
+}
+
+
+# DESC: MAIN PROCESSING
+# ARGS: None
+# OUT: None
+function main() {
+    local certs_dir="certs"
+    local app_name="consul"
+
+    echo "--- Generate Gossip Encryption Key ---"
+    gossip_encryption_key ${certs_dir} ${app_name}
+
+    echo ""
+    echo "--- Creating Consul ConfigMap ---"
+    k8s_configmap ${app_name}
+
+    echo ""
+    echo "--- Creating Consul Service ---"
+    k8s_service ${app_name}
+
+    echo ""
+    echo "--- Creating Consul StatefulSet ---"
+    k8s_statefulset ${app_name}
+}
+
+main
+

@@ -38,6 +38,7 @@ function create_ca() {
   printf "... ${1} Certificate Authority is already created\n"  
 }
 
+
 # DESC: Use CFSSL to create Private Key and TLS certificates
 # ARGS: $1 (REQ): Cert dir
 #       $2 (REQ): Config dir

@@ -1,176 +1,92 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Script Variables
-CURRENT_DIR=$(pwd)
-CERTS_DIR=$(pwd)/certs
-CERTS_CONFIG_DIR=${CERTS_DIR}/config
+# DESC: Create required directories
+# ARGS: $1 (REQ): Name of the dir to be created
+# OUT: None
+function make_dirs() {
+  if [[ $# -lt 1 ]]; then
+    printf "\nERROR: Missing arg for make_dirs()\n"
+    exit -2
+  fi
 
+  if [ ! -d ./$1 ]; then
+    mkdir -p ./$1
+    printf "... $1 directory created\n"
+    return
+  fi
 
-# Script functions
-function create_dir {
-    DIR_NAME="$1"
-
-    if [ ! -d ${DIR_NAME} ]; then
-        mkdir -pv ${DIR_NAME}
-        echo "${DIR_NAME}: created"
-    else
-        echo "${DIR_NAME}: already created"
-    fi
+  printf "... $1 directory is already created\n"
 }
 
 
-function create_file {
-    FILE_NAME="$1"
-    FILE_DATA="$2"
+# DESC: Use CFSSL to create a Certificate Authority
+# ARGS: $1 (REQ) - Cert destination path
+#       $2 (REQ) - Config file (JSON) path
+# OUT: None
+function create_ca() {
+  if [[ $# -lt 2 ]]; then
+    printf "\nERROR: Missing 2 args for create_ca()\n"
+    exit -2
+  fi 
 
-    if [ ! -f "${FILE_NAME}" ]; then
-        cat <<EOF >> "${FILE_NAME}"
-${FILE_DATA}
-EOF
-        echo "${FILE_NAME} created"
-    else
-        echo "${FILE_NAME} already exists"
-    fi
+  if [ ! -f ./${1}.pem ]; then
+    cfssl gencert -initca ./${2} | cfssljson -bare ./${1}
+    printf "... ${1} Certificate Authority created\n"
+    return
+  fi
+
+  printf "... ${1} Certificate Authority is already created\n"  
+}
+
+# DESC: Use CFSSL to create Private Key and TLS certificates
+# ARGS: $1 (REQ): Cert dir
+#       $2 (REQ): Config dir
+#       $3 (REQ): Cert file name
+# OUT: None
+function create_certs() {
+  if [[ $# -lt 3 ]]; then
+    printf "\nERROR: Missing 3 args for create_certs()\n"
+    exit -2
+  fi 
+
+  if [ ! -f ./${1}/${3}.pem ]; then
+    cfssl gencert \
+      -ca=${1}/ca.pem \
+      -ca-key=${1}/ca-key.pem \
+      -config=${2}/ca-config.json \
+      -profile=default \
+      ${2}/${3}-csr.json | cfssljson -bare ./${1}/${3}
+    printf "... ${3} PK and TLS created\n"
+    return
+  fi
+
+  printf "... ${3} PK and TLS are already created\n"
 }
 
 
-# ---------------
-# Main Processing
-# ---------------
+# DESC: MAIN PROCESSING
+# ARGS: None
+# OUT: None
+function main() {
+  local certs_dir="certs"
+  local conf_dir="config"
+  local consul_cert="consul"
+  local vault_cert="vault"
 
-# Create directory structure
-echo "Creating certs directory..."
-create_dir ${CERTS_CONFIG_DIR}
+  echo "--- Creating certificate directory ---"
+  make_dirs ${certs_dir}
 
-# Write ca-config.json
-printf "\nWriting %s file...\n" "ca-config.json"
-CONTENT="{
-  \"signing\": {
-    \"default\": {
-      \"expiry\": \"87600h\"
-    },
-    \"profiles\": {
-      \"default\": {
-        \"usages\": [
-          \"signing\",
-          \"key encipherment\",
-          \"server auth\",
-          \"client auth\"
-        ],
-        \"expiry\": \"8760h\"
-      }
-    }
-  }
-}"
+  echo ""
+  echo "--- Creating Certificate Authority ---"
+  create_ca ${certs_dir}/ca ${conf_dir}/ca-csr.json
 
-create_file "${CERTS_CONFIG_DIR}/ca-config.json" "${CONTENT}"
+  echo ""
+  echo "--- Creating Priviate Key and TLS cert for Consul ---"
+  create_certs ${certs_dir} ${conf_dir} ${consul_cert} 
+  
+  echo ""
+  echo "--- Creating Priviate Key and TLS cert for Vault ---"
+  create_certs ${certs_dir} ${conf_dir} ${vault_cert}
+}
 
-
-# Write ca-csr.json
-printf "\nWriting %s file...\n" "ca-csr.json"
-CONTENT="{
-  \"hosts\": [
-    \"cluster.local\"
-  ],
-  \"key\": {
-    \"algo\": \"rsa\",
-    \"size\": 2048
-  },
-  \"names\": [
-    {
-      \"C\": \"CA\",
-      \"ST\": \"British Columbia\",
-      \"L\": \"Vancouver\"
-    }
-  ]
-}"
-
-create_file "${CERTS_CONFIG_DIR}/ca-csr.json" "${CONTENT}"
-
-
-# Write consul-csr.json
-printf "\nWriting %s file...\n" "consul-csr.json"
-CONTENT="{
-  \"CN\": \"server.dc1.cluster.local\",
-  \"hosts\": [
-    \"server.dc1.cluster.local\",
-    \"127.0.0.1\"
-  ],
-  \"key\": {
-    \"algo\": \"rsa\",
-    \"size\": 2048
-  },
-  \"names\": [
-    {
-      \"C\": \"CA\",
-      \"ST\": \"British Columbia\",
-      \"L\": \"Vancouver\"
-    }
-  ]
-}"
-
-create_file "${CERTS_CONFIG_DIR}/consul-csr.json" "${CONTENT}"
-
-
-# Write vault-csr.json
-printf "\nWriting %s file...\n" "vault-csr.json"
-CONTENT="{
-  \"hosts\": [
-    \"vault\",
-    \"127.0.0.1\"
-  ],
-  \"key\": {
-    \"algo\": \"rsa\",
-    \"size\": 2048
-  },
-  \"names\": [
-    {
-      \"C\": \"CA\",
-      \"ST\": \"British Columbia\",
-      \"L\": \"Vancouver\"
-    }
-  ]
-}"
-
-create_file "${CERTS_CONFIG_DIR}/vault-csr.json" "${CONTENT}"
-
-
-# Create a Certificate Authority
-printf "\nCreating a Certificate of Authority...\n"
-if [ ! -f "${CERTS_DIR}/ca-key.pem" ]; then
-    cfssl gencert -initca certs/config/ca-csr.json | cfssljson -bare certs/ca
-    echo "Certificate Authority: created"
-else
-    echo "Certificate Authority: already created"
-fi
-
-
-# Create private key and a TLS cert for Consul
-printf "\nCreating a private key and a TLS cert for Consul...\n"
-if [ ! -f "${CERTS_DIR}/consul.pem" ]; then
-    cfssl gencert \
-      -ca=certs/ca.pem \
-      -ca-key=certs/ca-key.pem \
-      -config=certs/config/ca-config.json \
-      -profile=default \
-      certs/config/consul-csr.json | cfssljson -bare certs/consul
-    echo "Consul PK and TLS: created"
-else
-    echo "Consul PK and TLS: already created"
-fi
-
-
-# Create private key and a TLS cert for Vault
-printf "\nCreating a private key and a TLS cert for Vault...\n"
-if [ ! -f "${CERTS_DIR}/vault.pem" ]; then
-    cfssl gencert \
-      -ca=certs/ca.pem \
-      -ca-key=certs/ca-key.pem \
-      -config=certs/config/ca-config.json \
-      -profile=default \
-      certs/config/vault-csr.json | cfssljson -bare certs/vault
-    echo "Vault PK and TLS: created"
-else
-    echo "Vault PK and TLS: already created"
-fi
-
+main

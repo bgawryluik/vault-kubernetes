@@ -9,13 +9,13 @@ function check_binary() {
         exit -2
     fi 
 
-    if ! command -v "$1" > /dev/null 2>&1; then
-        printf "\nERROR: Can't find $1 in your PATH.\n"
-        printf "Please install $1.\n"
+    if ! command -v "${1}" > /dev/null 2>&1; then
+        printf "\nERROR: Can't find ${1} in your PATH.\n"
+        printf "Please install ${1}.\n"
         exit -1
     fi
 
-    printf "... $1 is in your PATH\n"
+    printf "... ${1} is in your PATH\n"
 }
 
 
@@ -47,8 +47,10 @@ function check_minikube_running() {
     printf "... minikube is running\n"
 }
 
-
-function main {
+# DESC: MAIN PROCESSING
+# ARGS: None
+# OUT: None
+function main() {
     echo "--- Checking for required binaries ---"
     local deps=(
         "docker"
@@ -62,7 +64,7 @@ function main {
 
     # check for required binaries
     for dep in "${deps[@]}"; do
-        check_binary "$dep"
+        check_binary "${dep}"
     done
 
     echo ""

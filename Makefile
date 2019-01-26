@@ -2,7 +2,7 @@ SHELL = /bin/bash
 
 .PHONY: workstation certs consul vault clean forward kubestart kubestop destroy
 
-workstation: deps certs
+workstation: deps certs consul
 
 deps:
 	$(info Checking dependencies...)

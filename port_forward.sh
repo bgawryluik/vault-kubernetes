@@ -1,35 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Ensure minikube is running or exit
-if ! minikube status | grep Running &> /dev/null; then
-    echo "ERROR: minicube is NOT running. Please run 'minikube start'"
-    exit 1
-fi
+# DESC: MAIN PROCESSING
+# ARGS: None
+# OUT: None
+function main() {
+    local certs_dir="certs"
+    local app_name="vault"
+    local app_port=8200
 
+    echo "--- Setting ${app_name} ENV Vars ---"
+    export VAULT_ADDR=https://127.0.0.1:${app_port}
+    export VAULT_CACERT="${certs_dir}/ca.pem"
 
-# ------------------
-# Set Vault ENV Vars
-# ------------------
-echo "Setting Vault ENV Vars"
-export VAULT_ADDR=https://127.0.0.1:8200
-export VAULT_CACERT="certs/ca.pem"
+    echo ""
+    echo "--- Forwarding ${app_name} port: ${app_port} ---"
+    POD=$(kubectl get pods -o=name | grep ${app_name} | sed "s/^.\{4\}//")
+    kubectl port-forward $POD ${app_port}:${app_port}
+}
 
-# ------------------
-# Port forward Vault
-# ------------------
-echo "Forwarding Vault port (8200) when pods are ready..."
-echo "You can view the UI at: $VAULT_ADDR"
+main
 
-POD=$(kubectl get pods -o=name | grep vault | sed "s/^.\{4\}//")
-
-while true; do
-  STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
-  if [ "$STATUS" == "Running" ]; then
-    break
-  else
-    echo "Pod status is: ${STATUS}"
-    sleep 5
-  fi
-done
-
-kubectl port-forward $POD 8200:8200

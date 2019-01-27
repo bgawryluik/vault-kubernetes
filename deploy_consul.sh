@@ -13,7 +13,7 @@ function gossip_encryption_key() {
     if ! kubectl get secrets | grep ${2} > /dev/null 2>&1; then
         export GOSSIP_ENCRYPTION_KEY=$(consul keygen)
 
-        kubectl create secret generic consul \
+        kubectl create secret generic ${2} \
             --from-literal="gossip-encryption-key=${GOSSIP_ENCRYPTION_KEY}" \
             --from-file=${1}/ca.pem \
             --from-file=${1}/${2}.pem \
@@ -21,7 +21,7 @@ function gossip_encryption_key() {
 
         printf "... Gossip Encryption Key created\n"
     else
-        printf "... Gossip Encryption Key is already created\n"
+        printf "... Gossip Encryption Key was already created\n"
     fi
 
     # Gossip Encryption Key Sanity
@@ -48,7 +48,7 @@ function k8s_configmap() {
         kubectl create configmap ${1} --from-file=${1}/config.json
         printf "... ${1} ConfigMap created\n"
     else
-        printf "... ${1} ConfigMap is already created\n"
+        printf "... ${1} ConfigMap was already created\n"
     fi
 
     # K8s ConfigMap Sanity
@@ -75,7 +75,7 @@ function k8s_service() {
         kubectl create -f ${1}/service.yaml
         printf "... ${1} Service created\n"
     else
-        printf "... ${1} Service is already created\n"
+        printf "... ${1} Service was already created\n"
     fi
 
     # K8s Service Sanity
@@ -116,7 +116,7 @@ function k8s_statefulset() {
             fi
         done
     else
-        printf "... ${1} StatefulSet is already created\n"
+        printf "... ${1} StatefulSet was already created\n"
     fi
 
     # K8s StatefulSet Sanity
@@ -141,15 +141,15 @@ function main() {
     gossip_encryption_key ${certs_dir} ${app_name}
 
     echo ""
-    echo "--- Creating Consul ConfigMap ---"
+    echo "--- Creating ${app_name} ConfigMap ---"
     k8s_configmap ${app_name}
 
     echo ""
-    echo "--- Creating Consul Service ---"
+    echo "--- Creating ${app_name} Service ---"
     k8s_service ${app_name}
 
     echo ""
-    echo "--- Creating Consul StatefulSet ---"
+    echo "--- Creating ${app_name} StatefulSet ---"
     k8s_statefulset ${app_name}
 }
 

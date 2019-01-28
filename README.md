@@ -62,24 +62,9 @@ Kind of goes without saying. Clone and then navigate as follows:
 $ cd vault-kubernetes
 ```
 
-### Create the Kubernetes cluster certificates
+### Deploy the cluster
 ```
-$ make certs
-```
-
-### Deploy Consul
-```
-$ make consul
-```
-
-### Deploy Vault
-```
-$ make vault
-```
-
-### Forward Port 8200
-```
-$ make forward
+$ make workstation
 ```
 
 ## Quick Test
@@ -129,22 +114,8 @@ Key    Value
 foo    bar
 ```
 
-When you are done, bring down the cluster. In the terminal that you used to run `make forward`, type `ctl-c` to kill the port forwarding process. Then type:
+When you are done, bring down the cluster. First you should stop port-forwarding. Then you can destroy the minikube cluster. 
 ```
-$ make kubestop
+$ pkill kubectl
+$ minikube destroy
 ```
-
-To start up Vault again, type:
-```
-$ make kubestart
-$ make forward
-```
-
-Then export `VAULT_ADDR` and `VAULT_CACERT` environment variables in another terminal and run:
-```
-$ vault status
-```
-
-TODO restarted minikube and had to unseal again and previous secrets were lost. How to fix that?  
-TODO load balancer so that we can use consul, too  
-TODO terminate real cert for UIs  

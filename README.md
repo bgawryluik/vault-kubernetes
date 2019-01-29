@@ -95,8 +95,10 @@ Key       Value
 mysecret  mysecretvalue
 ```
 
-When you are done, bring down the cluster. First you should stop port-forwarding. Then you can destroy the minikube cluster. 
+
+## Tearing Everything Down
+The easiest way to remove the `kubernetes-vault` cluster is to stop port-forwarding and then delete the whole works as follows:  
 ```
 $ pkill kubectl
-$ minikube destroy
+$ minikube delete
 ```

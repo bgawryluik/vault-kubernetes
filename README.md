@@ -1,37 +1,24 @@
 # Hashicorp's Vault using Kubernetes
 ## Running Vault and Consul on Kubernetes
-
 Based on the blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0).
 
+**NOTE**: these instuctions assume that your workstation is a Mac. For example, this installation was tested on a 2017 MacBook (3.1GHz Intel Core I7 with 16GB of memory) running macOS Mojave (v10.14.2).
+
 ## Requirements
+It is much easier to follow these instruction is you already have [Homebrew](https://brew.sh/) installed on your Mac. Click this [link](https://brew.sh/) for installation instructions.
 
-### Docker v18.09.0
+| Requirement | My Version | Installation Instrunctions |
+| ----------- | ------- | -------------------------- |
+| Docker | 18.09.1 | `brew install docker` |
+| kubectl | Client Version: v1.13.2 | `brew install kubectl` |
+| minikube | v0.30.0 | `brew cask install virtualbox; brew cask install minikube` |
+| Hashicorp consul client | v1.4.0 | `brew install consul` |
+| Hashicorp vault client| v1.0.2 | `brew install vault` |
+| Golang | 1.11.5 | `brew install go --cross-compile-common` |
 
-### Kubernetes v1.10.0
+### Configuring Golang
 
-### Minikube
-
-[Minikube](https://kubernetes.io/docs/setup/minikube/) is a single-node kubernetes cluster that is used to test the Kubernetes API running K8s applications on your workstation. This is how you run it using VirtualBox as your Hypervisor.
-
-#### MacOS
-```
-$ brew update
-$ brew install kubectl
-$ brew cask install virtualbox
-$ brew cask install minikube
-```
-
-#### Ubuntu 18.04
-I just followed the instructions listed here: [How to Install Minikube on Ubuntu 18.04](https://computingforgeeks.com/how-to-install-minikube-on-ubuntu-18-04/).
-
-### Hashicorp's Consul client
-Follow the instructions listed [here](https://www.consul.io/docs/install/index.html). The original blog post recommends `v1.4.0`.
-
-### Hashicorp's Vault client
-Follow the instructions listed [here](https://www.vaultproject.io/docs/install/). The original blog post recommends `v0.11.5`.
-
-### The Go Programming Language
-The blog post has great instructions for installing Go on a Mac. Google has plenty of instructions for every other OS. Just make certain that you remember to set you `GOPATH` variable.  
+Make certain that you remember to set you `GOPATH` variable.  
 
 Example:
 ```
@@ -40,7 +27,7 @@ $ export GOPATH=$HOME/go
 $ export PATH=$PATH:$GOPATH/bin
 ```
 
-### Cloudflare's cfssl toolkit
+### Installing Cloudflare's cfssl toolkit
 Once you've got GO properly installed and configured, just run:
 ```
 $ go get -u github.com/cloudflare/cfssl/cmd/cfssl

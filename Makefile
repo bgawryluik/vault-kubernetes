@@ -1,8 +1,8 @@
 SHELL = /bin/bash
 
-.PHONY: workstation certs consul vault clean forward destroy
+.PHONY: workstation certs consul vault clean destroy
 
-workstation: deps certs consul vault forward
+workstation: deps certs consul vault
 
 deps:
 	$(info Checking dependencies...)
@@ -19,10 +19,6 @@ consul:
 vault: 
 	$(info Deploying Vault...)
 	./deploy_vault.sh
-
-forward: 
-	$(info Forwarding Vault port...)
-	./port_forward.sh
 	
 clean:
 	$(info Deleting certificates...)

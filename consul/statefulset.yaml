@@ -47,6 +47,8 @@ spec:
             - "-ui"
             - "-disable-host-node-id"
           volumeMounts:
+            - name: data
+              mountPath: /consul/data
             - name: config
               mountPath: /consul/myconfig
             - name: tls
@@ -84,3 +86,12 @@ spec:
         - name: tls
           secret:
             secretName: consul
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: 
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi

@@ -102,7 +102,7 @@ function main() {
     echo "--- Setting up vault ENV Vars ---"
     export VAULT_ADDR=https://127.0.0.1:${vault_port}
     export VAULT_CACERT="${certs_dir}/ca.pem"
-    echo "VAULT_ADDR=${VAULT_ADDR}"
+    echo "VAULT_ADDR=${VAULT_ADDR}:${vault_port}"
     echo "VAULT_CACERT=${VAULT_CACERT}"
 
     echo ""

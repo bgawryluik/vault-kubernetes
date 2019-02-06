@@ -81,7 +81,7 @@ function k8s_deployment() {
 function main() {
     local certs_dir="certs"
     local app_name="vault"
-
+    local vault_port=8200
 
     echo "--- Storing ${app_name} certs in a Secret ---"
     store_k8s_certs ${certs_dir} ${app_name}
@@ -102,13 +102,13 @@ function main() {
     echo "--- Setting up vault ENV Vars ---"
     export VAULT_ADDR=https://127.0.0.1:${vault_port}
     export VAULT_CACERT="${certs_dir}/ca.pem"
+    unset VAULT_TLS_SERVER_NAME
     echo "VAULT_ADDR=${VAULT_ADDR}:${vault_port}"
     echo "VAULT_CACERT=${VAULT_CACERT}"
 
     echo ""
     echo ""--- Forwarding port ${vault_port} for ${vault_pod} ---
     local vault_pod=$(kubectl get pods -o=name | grep vault | sed "s/^.\{4\}//")
-    local vault_port=8200
     k8s_port_forwarding ${vault_pod} ${vault_port} ${vault_port}
 }
 

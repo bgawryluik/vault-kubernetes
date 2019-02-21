@@ -55,6 +55,12 @@ $ make workstation
 ```
 
 ## Quick Test
+Set Vault specific Environment Variables:
+```
+export VAULT_ADDR=https://127.0.0.1:820
+export VAULT_CACERT="certs/ca.pem"
+```  
+
 Ensure Vault client is installed. Then init Vault using a single key (DO NOT do this in production):
 ```
 vault operator init -key-shares=1 -key-threshold=1

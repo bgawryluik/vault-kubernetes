@@ -7,7 +7,7 @@ function check_binary() {
     if [[ $# -lt 1 ]]; then
         printf "\nERROR: Missing arg for check_binary()\n"
         exit -2
-    fi 
+    fi
 
     if ! command -v "${1}" > /dev/null 2>&1; then
         printf "\nERROR: Can't find ${1} in your PATH.\n"
@@ -22,29 +22,41 @@ function check_binary() {
 # DESC: Ensure that docker is running (all platforms)
 # ARGS: None
 # OUT: None
-function check_docker_running() {
-    doc_running=$(curl -s --unix-socket /var/run/docker.sock http://ping > /dev/null)
-    status=$?
-
-    if [ "${status}" == "7" ]; then
-        printf "\nERROR: The docker service is NOT running. Please start docker.\n"
-        exit -1
-    fi
-
-    printf "... docker service is running\n"
-}
+#function check_docker_running() {
+#    doc_running=$(curl -s --unix-socket /var/run/docker.sock http://ping > /dev/null)
+#    status=$?
+#
+#    if [ "${status}" == "7" ]; then
+#        printf "\nERROR: The docker service is NOT running. Please start docker.\n"
+#        exit -1
+#    fi
+#
+#    printf "... docker service is running\n"
+#}
 
 
 # DESC: Ensure that minikube is running
 # ARGS: None
 # OUT: None
-function check_minikube_running() {
-    if ! minikube status > /dev/null 2>&1 ; then
-        printf "\nERROR: minikube service is NOT running. Please start minikube.\n"
+#function check_minikube_running() {
+#    if ! minikube status > /dev/null 2>&1 ; then
+#        printf "\nERROR: minikube service is NOT running. Please start minikube.\n"
+#        exit -1
+#    fi
+#
+#    printf "... minikube is running\n"
+#}
+
+# DESC: Ensure that AWS CLI Credentials are configured
+# ARGS: None
+# OUT: None
+function check_aws_cli_credentials() {
+    if ! aws sts get-caller-identity > /dev/null 2>&1 ; then
+        printf "\nERROR: AWS CLI credentials are NOT configured. Run 'aws configure'"
         exit -1
     fi
 
-    printf "... minikube is running\n"
+    printf "... AWS CLI credentials are configured\n"
 }
 
 # DESC: MAIN PROCESSING
@@ -53,9 +65,9 @@ function check_minikube_running() {
 function main() {
     echo "--- Checking for required binaries ---"
     local deps=(
-        "docker"
-        "minikube"
+        "aws"
         "kubectl"
+        "eksctl"
         "consul"
         "vault"
         "go"
@@ -67,10 +79,14 @@ function main() {
         check_binary "${dep}"
     done
 
-    echo ""
-    echo "--- Checking for required services ---"
-    check_docker_running
-    check_minikube_running
+    echo "--- Checking for AWS CLI credentials ---"
+    check_aws_cli_credentials
+
+
+    #echo ""
+    #echo "--- Checking for required services ---"
+    #check_docker_running
+    #check_minikube_running
 }
 
 main

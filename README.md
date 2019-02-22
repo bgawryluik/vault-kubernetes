@@ -18,7 +18,7 @@ It is much easier to follow these instruction if you already have [Homebrew](htt
 
 ### Configuring Golang
 
-Make certain that you remember to set you `GOPATH` variable.  
+Make certain that you remember to set your `GOPATH` variable.  
 
 Example:
 ```

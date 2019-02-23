@@ -66,6 +66,7 @@ function main() {
     echo "--- Checking for required binaries ---"
     local deps=(
         "aws"
+        "aws-iam-authenticator"
         "kubectl"
         "eksctl"
         "consul"

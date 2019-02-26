@@ -21,8 +21,8 @@ vault:
 	./deploy_vault.sh
 	
 clean:
-	$(info Deleting certificates...)
-	rm -rfv certs
+	$(info Cleaning up resources...)
+	./cleanup.sh
 	
 destroy: clean
 	$(info Destroying the cluster...)

@@ -37,47 +37,6 @@ function gossip_encryption_key() {
 }
 
 
-# DESC: Creates a k8s StatefulSet
-# ARGS: $1 (REQ): Application Name
-# OUT: None
-function k8s_statefulset() {
-    if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_statefulset()\n"
-        exit -2
-    fi
-
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl create -f ${1}/statefulset.yaml
-        printf "... ${1} StatefulSet created\n"
-
-        # Wait for pods to launch
-        printf "... waiting for ${1} pods to launch\n"
-        sleep 10
-        POD=$(kubectl get pods -o=name | grep ${1}-0 | sed "s/^.\{4\}//")
-        while true; do
-            STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
-            if [ "$STATUS" == "Running" ]; then
-                break
-            else
-                printf "Pod status is: ${STATUS}\n"
-                sleep 5
-            fi
-        done
-    else
-        printf "... ${1} StatefulSet was already created\n"
-    fi
-
-    # K8s StatefulSet Sanity
-    printf "Testing to see if the ${1} StatefulSet is sane...\n"
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        printf "ERROR: can't find ${1} Pods!\n"
-        exit 1
-    else
-        printf "${1} Pods look good\n"
-    fi
-}
-
-
 # DESC: MAIN PROCESSING
 # ARGS: None
 # OUT: None

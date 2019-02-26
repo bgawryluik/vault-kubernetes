@@ -33,48 +33,6 @@ function store_k8s_certs() {
 }
 
 
-# DESC: Creates a k8s Desployment
-# ARGS: $1 (REQ): Application Name
-# OUT: None
-function k8s_deployment() {
-    if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_deployment()\n"
-        exit -2
-    fi
-
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl apply -f ${1}/deployment.yaml
-        printf "... ${1} Deployment applied\n"
-
-        # Wait for pods to launch
-        printf "... waiting for ${1} pods to launch\n"
-        sleep 10
-
-        POD=$(kubectl get pods -o=name | grep ${1} | sed "s/^.\{4\}//")
-        while true; do
-            STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
-            if [ "$STATUS" == "Running" ]; then
-                break
-            else
-                printf "Pod status is: ${STATUS}\n"
-                sleep 5
-            fi
-        done
-    else
-        printf "... ${1} Deployment was already applied\n"
-    fi
-
-    # K8s Deployment Sanity
-    printf "Testing to see if the ${1} Deployment is sane...\n"
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        printf "ERROR: can't find ${1} Pods!\n"
-        exit 1
-    else
-        printf "${1} Pods look good\n"
-    fi
-}
-
-
 # DESC: MAIN PROCESSING
 # ARGS: None
 # OUT: None
@@ -105,4 +63,3 @@ function main() {
 }
 
 main
-

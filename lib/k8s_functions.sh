@@ -26,7 +26,24 @@ function k8s_configmap() {
     fi
 }
 
-# DESC: Creates a k8s Desployment
+# DESC: Deletes a k8s ConfigMap
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_configmap_delete() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_configmap_delete()\n"
+        exit -2
+    fi
+
+    if kubectl get configmaps > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
+        printf "... deleting ConfigMap for ${1}\n"
+        kubectl delete configmap ${1} 
+    else
+        printf "... ConfigMap for ${1} was already deleted\n"
+    fi
+}
+
+# DESC: Creates a k8s Deployment
 # ARGS: $1 (REQ): Application Name
 # OUT: None
 function k8s_deployment() {
@@ -67,6 +84,40 @@ function k8s_deployment() {
     fi
 }
 
+# DESC: Deletes a k8s Deployment
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_deployment_delete() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_deployment_delete()\n"
+        exit -2
+    fi
+
+    if kubectl get pods > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
+        printf "... deleting Deployment for ${1}\n"
+        kubectl delete deployment ${1}
+    else
+        printf "... Deployment for ${1} was already deleted\n"
+    fi
+}
+
+# DESC: Deletes a k8s Secret
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_secret_delete() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_secret_delete()\n"
+        exit -2
+    fi
+
+    if kubectl get secret ${1} > /dev/null 2>&1; then
+        printf "... deleting Secret for ${1}\n"
+        kubectl delete secret ${1}
+    else
+        printf "... Secret for ${1} was already deleted\n"
+    fi
+}
+
 # DESC: Creates a k8s Service
 # ARGS: $1 (REQ): Application Name
 # OUT: None
@@ -90,6 +141,80 @@ function k8s_service() {
         exit 1
     else
         printf "${1} Service looks good\n"
+    fi
+}
+
+# DESC: Deletes a k8s Service
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_service_delete() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_service_delete()\n"
+        exit -2
+    fi
+
+    if kubectl get service ${1} > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
+        printf "... deleting Service for ${1}\n"
+        kubectl delete service ${1}
+    else
+        printf "... Service for ${1} was already deleted\n"
+    fi
+}
+
+# DESC: Creates a k8s StatefulSet
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_statefulset() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_statefulset()\n"
+        exit -2
+    fi
+
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+        kubectl create -f ${1}/statefulset.yaml
+        printf "... ${1} StatefulSet created\n"
+
+        # Wait for pods to launch
+        printf "... waiting for ${1} pods to launch\n"
+        sleep 10
+        POD=$(kubectl get pods -o=name | grep ${1}-0 | sed "s/^.\{4\}//")
+        while true; do
+            STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
+            if [ "$STATUS" == "Running" ]; then
+                break
+            else
+                printf "Pod status is: ${STATUS}\n"
+                sleep 5
+            fi
+        done
+    else
+        printf "... ${1} StatefulSet was already created\n"
+    fi
+
+    # K8s StatefulSet Sanity
+    printf "Testing to see if the ${1} StatefulSet is sane...\n"
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+        printf "ERROR: can't find ${1} Pods!\n"
+        exit 1
+    else
+        printf "${1} Pods look good\n"
+    fi
+}
+
+# DESC: Deletes a k8s StatefulSet
+# ARGS: $1 (REQ): Application Name
+# OUT: None
+function k8s_statefulset_delete() {
+    if [[ $# -lt 1 ]]; then
+        printf "\nERROR: Missing 1 arg for k8s_statefulset_delete()\n"
+        exit -2
+    fi
+
+    if kubectl get pods > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
+        printf "... deleting StatefulSet for ${1}\n"
+        kubectl delete statefulset ${1}
+    else
+        printf "... StatefulSet for ${1} was already deleted\n"
     fi
 }
 

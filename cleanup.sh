@@ -39,6 +39,10 @@ function main() {
     k8s_configmap_delete ${consul_app_name}
 
     echo ""
+    echo "--- Deleting Consul PersistentVolumeClaims ---"
+    k8s_pvc_delete ${consul_app_name}
+
+    echo ""
     echo "--- Deleting Secrets ---"
     for secret in ${vault_app_name} ${consul_app_name}; do
         k8s_secret_delete ${secret}

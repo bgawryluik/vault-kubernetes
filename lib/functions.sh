@@ -246,6 +246,23 @@ function k8s_port_forwarding() {
     fi
 }
 
+# DESC: Delete persistent volume claims
+# ARGS: $1: (REQ) application name (label)
+# OUT: NONE
+function k8s_pvc_delete() {
+    if [[ $# -lt 1 ]]; then
+        error "ERROR: Missing 1 args for k8s_pvc_delete()"
+        exit -2
+    fi
+
+    if kubectl get pvc | grep ${1}; then
+        kubectl delete pvc -l app=${1}
+        success "Deleted persistent volume claims for ${1}"
+    else
+        info "Persistent volume claims for ${1} were already deleted"
+    fi
+}
+
 # DESC: Pretty printing functions inspired from https://github.com/Sajjadhosn/dotfiles
 # ARGS: $1 (REQ): String text message
 #       $2 (REQ): Text color

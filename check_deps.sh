@@ -17,7 +17,7 @@ function check_binary() {
         exit -1
     fi
 
-    success "${1} is in your PATH"
+    info "${1} is in your PATH"
 }
 
 
@@ -33,7 +33,7 @@ function check_docker_running() {
         exit -1
     fi
 
-    success "docker service is running"
+    info "docker service is running"
 }
 
 
@@ -46,7 +46,7 @@ function check_minikube_running() {
         exit -1
     fi
 
-    success "minikube is running"
+    info "minikube is running"
 }
 
 # DESC: MAIN PROCESSING

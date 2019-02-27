@@ -32,7 +32,7 @@ function gossip_encryption_key() {
         error "ERROR: can't find the Gossip Encryption Key!"
         exit 1
     else
-        success "Gossip Encryption Key looks good"
+        info "Gossip Encryption Key looks good"
     fi
 }
 

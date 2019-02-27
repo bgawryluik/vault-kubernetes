@@ -28,7 +28,7 @@ function store_k8s_certs() {
     if ! kubectl describe secret ${2}; then
         error "ERROR: can't find the ${2} Secret!"
     else
-        success "${2} Secret looks good"
+        info "${2} Secret looks good"
     fi
 }
 

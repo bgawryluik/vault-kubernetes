@@ -9,7 +9,7 @@ function k8s_configmap() {
         exit -2
     fi
 
-    if ! kubectl get configmaps | grep ${1}; then
+    if ! kubectl get configmaps | grep ${1} > /dev/null 2>&1; then
         kubectl create configmap ${1} --from-file=${1}/config.json
         success "${1} ConfigMap created"
     else
@@ -18,11 +18,11 @@ function k8s_configmap() {
 
     # K8s ConfigMap Sanity
     printf "Testing to see if the ${1} ConfigMap is sane...\n"
-    if ! kubectl describe configmap ${1}; then
-        error "ERROR: can't find the ${1} ConfigMap!"
+    if ! kubectl describe configmap ${1} > /dev/null 2>&1; then
+        substep_error "ERROR: can't find the ${1} ConfigMap!"
         exit 1
     else
-        info "${1} ConfigMap looks good"
+        substep_info "${1} ConfigMap looks good"
     fi
 }
 
@@ -35,7 +35,7 @@ function k8s_configmap_delete() {
         exit -2
     fi
 
-    if kubectl get configmaps | grep ${1}; then
+    if kubectl get configmaps | grep ${1} > /dev/null 2>&1; then
         kubectl delete configmap ${1}
         success "Deleted ConfigMap for ${1}"
     else
@@ -52,12 +52,12 @@ function k8s_deployment() {
         exit -2
     fi
 
-    if ! kubectl get pods | grep ${1}; then
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
         kubectl apply -f ${1}/deployment.yaml
         success "${1} Deployment applied"
 
         # Wait for pods to launch
-        info "... waiting for ${1} pods to launch"
+        substep_info "... waiting for ${1} pods to launch"
         sleep 10
 
         POD=$(kubectl get pods -o=name | grep ${1} | sed "s/^.\{4\}//")
@@ -76,11 +76,11 @@ function k8s_deployment() {
 
     # K8s Deployment Sanity
     printf "Testing to see if the ${1} Deployment is sane...\n"
-    if ! kubectl get pods | grep ${1}; then
-        error "ERROR: can't find ${1} Pods!"
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+        substep_error "ERROR: can't find ${1} Pods!"
         exit 1
     else
-        info "${1} Pods look good"
+        substep_info "${1} Pods look good"
     fi
 }
 
@@ -110,7 +110,7 @@ function k8s_secret_delete() {
         exit -2
     fi
 
-    if kubectl get secret ${1}; then
+    if kubectl get secret ${1} > /dev/null 2>&1; then
         kubectl delete secret ${1}
         success "Deleted Secret for ${1}"
     else
@@ -127,7 +127,7 @@ function k8s_service() {
         exit -2
     fi
 
-    if ! kubectl get service ${1} | grep ${1}; then
+    if ! kubectl get service ${1} | grep ${1} > /dev/null 2>&1; then
         kubectl create -f ${1}/service.yaml
         success "${1} Service created"
     else
@@ -136,11 +136,11 @@ function k8s_service() {
 
     # K8s Service Sanity
     printf "Testing to see if the ${1} Service is sane...\n"
-    if ! kubectl get service ${1}; then
-        error "ERROR: can't find the ${1} Service!"
+    if ! kubectl get service ${1} > /dev/null 2>&1; then
+        substep_error "ERROR: can't find the ${1} Service!"
         exit 1
     else
-        info "${1} Service looks good"
+        substep_info "${1} Service looks good"
     fi
 }
 
@@ -153,7 +153,7 @@ function k8s_service_delete() {
         exit -2
     fi
 
-    if kubectl get service ${1} | grep ${1}; then
+    if kubectl get service | grep ${1} > /dev/null 2>&1; then
         printf "... deleting Service for ${1}\n"
         kubectl delete service ${1}
         success "Deleted Service for ${1}"
@@ -171,14 +171,14 @@ function k8s_statefulset() {
         exit -2
     fi
 
-    if ! kubectl get pods | grep ${1}; then
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
         kubectl create -f ${1}/statefulset.yaml
         success "${1} StatefulSet created"
 
         # Wait for pods to launch
-        info "... waiting for ${1} pods to launch"
+        substep_info "... waiting for ${1} pods to launch"
         sleep 10
-        POD=$(kubectl get pods -o=name | grep ${1}-0 | sed "s/^.\{4\}//")
+        POD=$(kubectl get pods -o=name | grep ${1}-1 | sed "s/^.\{4\}//")
         while true; do
             STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
             if [ "$STATUS" == "Running" ]; then
@@ -194,11 +194,11 @@ function k8s_statefulset() {
 
     # K8s StatefulSet Sanity
     info "Testing to see if the ${1} StatefulSet is sane..."
-    if ! kubectl get pods | grep ${1}; then
-        error "ERROR: can't find ${1} Pods!"
+    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+        substep_error "ERROR: can't find ${1} Pods!"
         exit 1
     else
-        info "${1} Pods look good"
+        substep_info "${1} Pods look good"
     fi
 }
 
@@ -211,7 +211,7 @@ function k8s_statefulset_delete() {
         exit -2
     fi
 
-    if kubectl get pods | grep ${1}; then
+    if kubectl get pods | grep ${1} > /dev/null 2>&1; then
         kubectl delete statefulset ${1}
         success "Deleted StatefulSet for ${1}"
     else
@@ -230,7 +230,7 @@ function k8s_port_forwarding() {
         exit -2
     fi
 
-    if ! ps aux | grep "[k]ubectl port-forward" | grep ${1}; then
+    if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} > /dev/null 2>&1; then
         kubectl port-forward ${1} ${2}:${3} &
         success "${1}: forwarding local port ${2} to pod port ${3}"
     else
@@ -239,10 +239,10 @@ function k8s_port_forwarding() {
 
     # K8s Port-Forwarding Sanity
     info "Testing to see if ${1}: forwarding pod port ${3} is sane"
-    if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} | grep ${2}; then
-        error "ERROR: Not Port-Forwarding ${1}: pod port ${3}!"
+    if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
+        substep_error "ERROR: Not Port-Forwarding ${1}: pod port ${3}!"
     else
-        info "Port-Forwarding ${1}: pod port ${3} looks good"
+        substep_info "Port-Forwarding ${1}: pod port ${3} looks good"
     fi
 }
 
@@ -255,7 +255,7 @@ function k8s_pvc_delete() {
         exit -2
     fi
 
-    if kubectl get pvc | grep ${1}; then
+    if kubectl get pvc | grep ${1} > /dev/null 2>&1; then
         kubectl delete pvc -l app=${1}
         success "Deleted persistent volume claims for ${1}"
     else

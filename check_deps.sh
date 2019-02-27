@@ -41,7 +41,7 @@ function check_docker_running() {
 # ARGS: None
 # OUT: None
 function check_minikube_running() {
-    if ! minikube status; then
+    if ! minikube status > /dev/null 2>&1; then
         error "ERROR: minikube service is NOT running. Please start minikube"
         exit -1
     fi

@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
+. ./lib/functions.sh
+
 # DESC: Checks if a binary exists in the search path
 # ARGS: $1 (REQ): Name of the target binary
 # OUT: None
 function check_binary() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing arg for check_binary()\n"
+        error "ERROR: Missing arg for check_binary()"
         exit -2
-    fi 
+    fi
 
-    if ! command -v "${1}" > /dev/null 2>&1; then
-        printf "\nERROR: Can't find ${1} in your PATH.\n"
-        printf "Please install ${1}.\n"
+    if ! command -v "${1}"; then
+        error "ERROR: Can't find ${1} in your PATH"
+        error "Please install ${1}"
         exit -1
     fi
 
-    printf "... ${1} is in your PATH\n"
+    info "${1} is in your PATH"
 }
 
 
@@ -27,11 +29,11 @@ function check_docker_running() {
     status=$?
 
     if [ "${status}" == "7" ]; then
-        printf "\nERROR: The docker service is NOT running. Please start docker.\n"
+        error "ERROR: The docker service is NOT running. Please start docker"
         exit -1
     fi
 
-    printf "... docker service is running\n"
+    info "docker service is running"
 }
 
 
@@ -39,12 +41,12 @@ function check_docker_running() {
 # ARGS: None
 # OUT: None
 function check_minikube_running() {
-    if ! minikube status > /dev/null 2>&1 ; then
-        printf "\nERROR: minikube service is NOT running. Please start minikube.\n"
+    if ! minikube status > /dev/null 2>&1; then
+        error "ERROR: minikube service is NOT running. Please start minikube"
         exit -1
     fi
 
-    printf "... minikube is running\n"
+    info "minikube is running"
 }
 
 # DESC: MAIN PROCESSING

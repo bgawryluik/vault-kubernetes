@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. ./lib/k8s_functions.sh
+. ./lib/functions.sh
 
 # DESC: Store K8s certificates in a Secret
 # ARGS: $1 (REQ): Cert dir
@@ -8,7 +8,7 @@
 # OUT: None
 function store_k8s_certs() {
     if [[ $# -lt 2 ]]; then
-        printf "\nERROR: Missing 2 args for store_k8s_certs()\n"
+        error "ERROR: Missing 2 args for store_k8s_certs()"
         exit -2
     fi
 
@@ -18,17 +18,18 @@ function store_k8s_certs() {
           --from-file=${1}/${2}.pem \
           --from-file=${1}/${2}-key.pem
 
-        printf "... ${2} certs stored as a secret\n"
+        success "${2} certs stored as a secret"
     else
-        printf "... ${2} certs are already stored as a secret\n"
+        info "${2} certs are already stored as a secret"
     fi
 
     # K8s Secrets sanity
-    printf "Testing to see if the ${2} Secret is sane...\n"
+    info "Testing to see if the ${2} Secret is sane"
     if ! kubectl describe secret ${2} > /dev/null 2>&1; then
-        printf "ERROR: can't find the ${2} Secret!\n"
+        substep_error "ERROR: can't find the ${2} Secret!"
+        exit 1
     else
-        printf "${2} Secret looks good\n"
+        substep_info "${2} Secret looks good"
     fi
 }
 

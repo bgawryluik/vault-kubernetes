@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. ./lib/k8s_functions.sh
+. ./lib/functions.sh
 
 
 # DESC: MAIN PROCESSING
@@ -37,6 +37,10 @@ function main() {
     echo ""
     echo "--- Deleting Consul ConfigMap ---"
     k8s_configmap_delete ${consul_app_name}
+
+    echo ""
+    echo "--- Deleting Consul PersistentVolumeClaims ---"
+    k8s_pvc_delete ${consul_app_name}
 
     echo ""
     echo "--- Deleting Secrets ---"

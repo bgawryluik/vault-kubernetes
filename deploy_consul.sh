@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. ./lib/k8s_functions.sh
+. ./lib/functions.sh
 
 # DESC: Generates Gossip Encryption Key
 # ARGS: $1 (REQ): Cert dir
@@ -8,7 +8,7 @@
 # OUT: None
 function gossip_encryption_key() {
     if [[ $# -lt 2 ]]; then
-        printf "\nERROR: Missing 2 args for gossip_encryption_key()\n"
+        error "ERROR: Missing 2 args for gossip_encryption_key()"
         exit -2
     fi
 
@@ -21,18 +21,18 @@ function gossip_encryption_key() {
             --from-file=${1}/${2}.pem \
             --from-file=${1}/${2}-key.pem
 
-        printf "... Gossip Encryption Key created\n"
+        success "Gossip Encryption Key created"
     else
-        printf "... Gossip Encryption Key was already created\n"
+        info "Gossip Encryption Key was already created"
     fi
 
     # Gossip Encryption Key Sanity
-    printf "Testing to see if the Gossip Encryption Key is sane...\n"
+    info "Testing to see if the Gossip Encryption Key is sane"
     if ! kubectl describe secret ${2} > /dev/null 2>&1; then
-        printf "ERROR: can't find the Gossip Encryption Key!\n"
+        substep_error "ERROR: can't find the Gossip Encryption Key!"
         exit 1
     else
-        printf "Gossip Encryption Key looks good\n"
+        substep_info "Gossip Encryption Key looks good"
     fi
 }
 

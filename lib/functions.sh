@@ -93,7 +93,7 @@ function k8s_deployment_delete() {
         exit -2
     fi
 
-    if kubectl get pods | grep ${1}; then
+    if kubectl get pods | grep ${1} > /dev/null 2>&1; then
         kubectl delete deployment ${1}
         success "Deleted Deployment for ${1}"
     else

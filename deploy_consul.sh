@@ -12,7 +12,7 @@ function gossip_encryption_key() {
         exit -2
     fi
 
-    if ! kubectl get secrets | grep ${2} > /dev/null 2>&1; then
+    if ! kubectl get secrets | grep ${2}; then
         export GOSSIP_ENCRYPTION_KEY=$(consul keygen)
 
         kubectl create secret generic ${2} \
@@ -28,7 +28,7 @@ function gossip_encryption_key() {
 
     # Gossip Encryption Key Sanity
     info "Testing to see if the Gossip Encryption Key is sane"
-    if ! kubectl describe secret ${2} > /dev/null 2>&1; then
+    if ! kubectl describe secret ${2}; then
         error "ERROR: can't find the Gossip Encryption Key!"
         exit 1
     else

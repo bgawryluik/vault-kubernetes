@@ -12,7 +12,7 @@ function store_k8s_certs() {
         exit -2
     fi
 
-    if ! kubectl get secrets | grep ${2} > /dev/null 2>&1; then
+    if ! kubectl get secrets | grep ${2}; then
         kubectl create secret generic ${2} \
           --from-file=${1}/ca.pem \
           --from-file=${1}/${2}.pem \
@@ -25,7 +25,7 @@ function store_k8s_certs() {
 
     # K8s Secrets sanity
     info "Testing to see if the ${2} Secret is sane"
-    if ! kubectl describe secret ${2} > /dev/null 2>&1; then
+    if ! kubectl describe secret ${2}; then
         error "ERROR: can't find the ${2} Secret!"
     else
         success "${2} Secret looks good"

@@ -11,7 +11,7 @@ function check_binary() {
         exit -2
     fi
 
-    if ! command -v "${1}" > /dev/null 2>&1; then
+    if ! command -v "${1}"; then
         error "ERROR: Can't find ${1} in your PATH"
         error "Please install ${1}"
         exit -1
@@ -41,7 +41,7 @@ function check_docker_running() {
 # ARGS: None
 # OUT: None
 function check_minikube_running() {
-    if ! minikube status > /dev/null 2>&1 ; then
+    if ! minikube status; then
         error "ERROR: minikube service is NOT running. Please start minikube"
         exit -1
     fi

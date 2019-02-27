@@ -5,24 +5,24 @@
 # OUT: None
 function k8s_configmap() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_configmap()\n"
+        error "ERROR: Missing 1 arg for k8s_configmap()"
         exit -2
     fi
 
     if ! kubectl get configmaps | grep ${1} > /dev/null 2>&1; then
         kubectl create configmap ${1} --from-file=${1}/config.json
-        printf "... ${1} ConfigMap created\n"
+        success "${1} ConfigMap created"
     else
-        printf "... ${1} ConfigMap was already created\n"
+        info "${1} ConfigMap was already created"
     fi
 
     # K8s ConfigMap Sanity
     printf "Testing to see if the ${1} ConfigMap is sane...\n"
     if ! kubectl describe configmap ${1} > /dev/null 2>&1; then
-        printf "ERROR: can't find the ${1} ConfigMap!\n"
+        error "ERROR: can't find the ${1} ConfigMap!"
         exit 1
     else
-        printf "${1} ConfigMap looks good\n"
+        info "${1} ConfigMap looks good"
     fi
 }
 
@@ -31,15 +31,15 @@ function k8s_configmap() {
 # OUT: None
 function k8s_configmap_delete() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_configmap_delete()\n"
+        error "ERROR: Missing 1 arg for k8s_configmap_delete()"
         exit -2
     fi
 
     if kubectl get configmaps > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
-        printf "... deleting ConfigMap for ${1}\n"
-        kubectl delete configmap ${1} 
+        kubectl delete configmap ${1}
+        success "Deleted ConfigMap for ${1}"
     else
-        printf "... ConfigMap for ${1} was already deleted\n"
+        info "ConfigMap for ${1} was already deleted"
     fi
 }
 
@@ -48,16 +48,16 @@ function k8s_configmap_delete() {
 # OUT: None
 function k8s_deployment() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_deployment()\n"
+        error "ERROR: Missing 1 arg for k8s_deployment()"
         exit -2
     fi
 
     if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
         kubectl apply -f ${1}/deployment.yaml
-        printf "... ${1} Deployment applied\n"
+        success "${1} Deployment applied"
 
         # Wait for pods to launch
-        printf "... waiting for ${1} pods to launch\n"
+        info "... waiting for ${1} pods to launch"
         sleep 10
 
         POD=$(kubectl get pods -o=name | grep ${1} | sed "s/^.\{4\}//")
@@ -66,21 +66,21 @@ function k8s_deployment() {
             if [ "$STATUS" == "Running" ]; then
                 break
             else
-                printf "Pod status is: ${STATUS}\n"
+                substep_info "Pod status is: ${STATUS}"
                 sleep 5
             fi
         done
     else
-        printf "... ${1} Deployment was already applied\n"
+        info "${1} Deployment was already applied"
     fi
 
     # K8s Deployment Sanity
     printf "Testing to see if the ${1} Deployment is sane...\n"
     if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        printf "ERROR: can't find ${1} Pods!\n"
+        error "ERROR: can't find ${1} Pods!"
         exit 1
     else
-        printf "${1} Pods look good\n"
+        info "${1} Pods look good"
     fi
 }
 
@@ -89,15 +89,15 @@ function k8s_deployment() {
 # OUT: None
 function k8s_deployment_delete() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_deployment_delete()\n"
+        error "ERROR: Missing 1 arg for k8s_deployment_delete()"
         exit -2
     fi
 
     if kubectl get pods > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
-        printf "... deleting Deployment for ${1}\n"
         kubectl delete deployment ${1}
+        success "Deleted Deployment for ${1}"
     else
-        printf "... Deployment for ${1} was already deleted\n"
+        info "Deployment for ${1} was already deleted"
     fi
 }
 
@@ -106,15 +106,15 @@ function k8s_deployment_delete() {
 # OUT: None
 function k8s_secret_delete() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_secret_delete()\n"
+        error "ERROR: Missing 1 arg for k8s_secret_delete()"
         exit -2
     fi
 
     if kubectl get secret ${1} > /dev/null 2>&1; then
-        printf "... deleting Secret for ${1}\n"
         kubectl delete secret ${1}
+        success "Deleted Secret for ${1}"
     else
-        printf "... Secret for ${1} was already deleted\n"
+        info "Secret for ${1} was already deleted"
     fi
 }
 
@@ -123,24 +123,24 @@ function k8s_secret_delete() {
 # OUT: None
 function k8s_service() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_service()\n"
+        error "ERROR: Missing 1 arg for k8s_service()"
         exit -2
     fi
 
     if ! kubectl get service ${1} | grep ${1} > /dev/null 2>&1; then
         kubectl create -f ${1}/service.yaml
-        printf "... ${1} Service created\n"
+        success "${1} Service created"
     else
-        printf "... ${1} Service was already created\n"
+        info "${1} Service was already created"
     fi
 
     # K8s Service Sanity
     printf "Testing to see if the ${1} Service is sane...\n"
     if ! kubectl get service ${1} > /dev/null 2>&1; then
-        printf "ERROR: can't find the ${1} Service!\n"
+        error "ERROR: can't find the ${1} Service!"
         exit 1
     else
-        printf "${1} Service looks good\n"
+        info "${1} Service looks good"
     fi
 }
 
@@ -149,15 +149,16 @@ function k8s_service() {
 # OUT: None
 function k8s_service_delete() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_service_delete()\n"
+        error "ERROR: Missing 1 arg for k8s_service_delete()"
         exit -2
     fi
 
     if kubectl get service ${1} > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
         printf "... deleting Service for ${1}\n"
         kubectl delete service ${1}
+        success "Deleted Service for ${1}"
     else
-        printf "... Service for ${1} was already deleted\n"
+        info "Service for ${1} was already deleted"
     fi
 }
 
@@ -166,16 +167,16 @@ function k8s_service_delete() {
 # OUT: None
 function k8s_statefulset() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_statefulset()\n"
+        error "ERROR: Missing 1 arg for k8s_statefulset()"
         exit -2
     fi
 
     if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
         kubectl create -f ${1}/statefulset.yaml
-        printf "... ${1} StatefulSet created\n"
+        success "${1} StatefulSet created"
 
         # Wait for pods to launch
-        printf "... waiting for ${1} pods to launch\n"
+        info "... waiting for ${1} pods to launch"
         sleep 10
         POD=$(kubectl get pods -o=name | grep ${1}-0 | sed "s/^.\{4\}//")
         while true; do
@@ -183,21 +184,21 @@ function k8s_statefulset() {
             if [ "$STATUS" == "Running" ]; then
                 break
             else
-                printf "Pod status is: ${STATUS}\n"
+                substep_info "Pod status is: ${STATUS}"
                 sleep 5
             fi
         done
     else
-        printf "... ${1} StatefulSet was already created\n"
+        info "${1} StatefulSet was already created"
     fi
 
     # K8s StatefulSet Sanity
-    printf "Testing to see if the ${1} StatefulSet is sane...\n"
+    info "Testing to see if the ${1} StatefulSet is sane..."
     if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        printf "ERROR: can't find ${1} Pods!\n"
+        error "ERROR: can't find ${1} Pods!"
         exit 1
     else
-        printf "${1} Pods look good\n"
+        info "${1} Pods look good"
     fi
 }
 
@@ -206,15 +207,15 @@ function k8s_statefulset() {
 # OUT: None
 function k8s_statefulset_delete() {
     if [[ $# -lt 1 ]]; then
-        printf "\nERROR: Missing 1 arg for k8s_statefulset_delete()\n"
+        error "ERROR: Missing 1 arg for k8s_statefulset_delete()"
         exit -2
     fi
 
     if kubectl get pods > /dev/null 2>&1 | grep ${1} > /dev/null 2>&1; then
-        printf "... deleting StatefulSet for ${1}\n"
         kubectl delete statefulset ${1}
+        success "Deleted StatefulSet for ${1}"
     else
-        printf "... StatefulSet for ${1} was already deleted\n"
+        info "StatefulSet for ${1} was already deleted"
     fi
 }
 
@@ -225,22 +226,90 @@ function k8s_statefulset_delete() {
 # OUT: None
 function k8s_port_forwarding() {
     if [[ $# -lt 3 ]]; then
-        printf "\nERROR: Missing 3 args for k8s_port_forwarding()\n"
+        error "ERROR: Missing 3 args for k8s_port_forwarding()"
         exit -2
     fi
 
     if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} > /dev/null 2>&1; then
         kubectl port-forward ${1} ${2}:${3} &
-        printf "... ${1}: forwarding local port ${2} to pod port ${3}\n"
+        success "${1}: forwarding local port ${2} to pod port ${3}"
     else
-        printf "... ${1}: already forwarding local port ${2} to pod port ${3}\n"
+        info "${1}: already forwarding local port ${2} to pod port ${3}"
     fi
 
     # K8s Port-Forwarding Sanity
-    printf "Testing to see if ${1}: forwarding pod port ${3} is sane...\n"
+    info "Testing to see if ${1}: forwarding pod port ${3} is sane"
     if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
-        printf "ERROR: Not Port-Forwarding ${1}: pod port ${3}!\n"
+        error "ERROR: Not Port-Forwarding ${1}: pod port ${3}!"
     else
-        printf "Port-Forwarding ${1}: pod port ${3} looks good\n"
+        info "Port-Forwarding ${1}: pod port ${3} looks good"
     fi
+}
+
+# DESC: Pretty printing functions inspired from https://github.com/Sajjadhosn/dotfiles
+# ARGS: $1 (REQ): String text message
+#       $2 (REQ): Text color
+#       $3 (REQ): Arrow (string representation)
+# OUT: NONE
+function coloredEcho() {
+    local color="${2}"
+    if ! [[ ${color} =~ '^[0-9]$' ]]; then
+        case $(echo ${color} | tr '[:upper:]' '[:lower:]') in
+            black)   color=0 ;;
+            red)     color=1 ;;
+            green)   color=2 ;;
+            yellow)  color=3 ;;
+            blue)    color=4 ;;
+            magenta) color=5 ;;
+            cyan)    color=6 ;;
+            white|*) color=7 ;;
+        esac
+    fi
+
+    tput bold
+    tput setaf "${color}"
+    echo "${3} ${1}"
+    tput sgr0
+}
+
+# DESC: Print an info message
+# ARGS: $1: String text message
+# OUT: printed string message
+function info() {
+    coloredEcho "${1}" blue "========>"
+}
+
+# DESC: Print a success message
+# ARGS: $1: String text message
+# OUT: printed string message
+function success() {
+    coloredEcho "${1}" green "========>"
+}
+
+# DESC: Print an error message
+# ARGS: $1: String text message
+# OUT: printed string message
+function error() {
+    coloredEcho "${1}" red "========>"
+}
+
+# DESC: print a substep info message
+# ARGS: $1: String text message
+# OUT: printed string message
+function substep_info() {
+    coloredEcho "${1}" magenta "===="
+}
+
+# DESC: print a substep success message
+# ARGS: $1: String text message
+# OUT: printed string message
+function substep_success() {
+    coloredEcho "${1}" cyan "===="
+}
+
+# DESC: print a substep error message
+# ARGS: $1: String text message
+# OUT: printed string message
+function substep_error() {
+    coloredEcho "${1}" red "===="
 }

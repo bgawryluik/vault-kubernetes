@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. ./lib/k8s_functions.sh
+. ./lib/functions.sh
 
 
 # DESC: MAIN PROCESSING

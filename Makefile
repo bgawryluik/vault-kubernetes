@@ -5,25 +5,19 @@ SHELL = /bin/bash
 eks: deps
 
 deps:
-	$(info Checking dependencies...)
 	./check_deps.sh
 
-#certs: 
-#	$(info Creating certificates...)
-#	./create_certs.sh
+certs: 
+	./create_certs.sh
 
-#consul:  
-#	$(info Deploying Consul...)
-#	./deploy_consul.sh
+consul:  
+	./deploy_consul.sh
 
-#vault: 
-#	$(info Deploying Vault...)
-#	./deploy_vault.sh
+vault: 
+	./deploy_vault.sh
 	
-#clean:
-#	$(info Deleting certificates...)
-#	rm -rfv certs
+clean:
+	./cleanup.sh
 	
-#destroy: clean
-#	$(info Destroying the cluster...)
-#	minikube delete
+destroy: clean
+	minikube delete

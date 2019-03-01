@@ -57,7 +57,7 @@ $ make workstation
 ## Quick Test
 Set Vault specific Environment Variables:
 ```
-export VAULT_ADDR=https://127.0.0.1:820
+export VAULT_ADDR=https://127.0.0.1:8200
 export VAULT_CACERT="certs/ca.pem"
 ```  
 
@@ -108,3 +108,10 @@ The easiest way to remove the `kubernetes-vault` cluster is to stop port-forward
 $ pkill kubectl
 $ minikube delete
 ```
+
+**HOWEVER**, if you just want to remove all of the Kubernetes resources and start over (without creating a new minikube cluster), then run the following:
+```
+$ make clean
+```
+
+Now you can run `make workstation` to re-deploy fresh Kubernetes resources again.

@@ -25,12 +25,13 @@ function check_binary() {
 # OUT: None
 function check_aws_cli_credentials() {
     if ! aws sts get-caller-identity > /dev/null 2>&1 ; then
-        printf "\nERROR: AWS CLI credentials are NOT configured. Run 'aws configure'"
+        error "ERROR: AWS CLI credentials are NOT configured. Run 'aws configure'"
         exit -1
     fi
 
     info "AWS CLI credentials are configured"
 }
+
 
 # DESC: MAIN PROCESSING
 # ARGS: None
@@ -53,6 +54,7 @@ function main() {
         check_binary "${dep}"
     done
 
+    echo ""
     echo "--- Checking for AWS CLI credentials ---"
     check_aws_cli_credentials
 }

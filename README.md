@@ -1,6 +1,6 @@
 # Hashicorp's Vault using Kubernetes
-## Running Vault and Consul on Kubernetes
-Based on this blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0).
+## Running Vault (and Consul and Prometheus and Grafana) on Kubernetes
+Based on this blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0). This started as project to simply run Vault in Kubernetes. It's slowly morphing into a K8s development platform that includes Vault, Consul, Prometheus, and Grafana.
 
 **NOTE**: these instuctions assume that your workstation is a Mac. For example, this installation was tested on a 2017 MacBook (3.1GHz Intel Core I7 with 16GB of memory) running macOS Mojave (v10.14.2).
 

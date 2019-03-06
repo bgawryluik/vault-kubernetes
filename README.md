@@ -12,6 +12,7 @@ It is much easier to follow these instruction if you already have [Homebrew](htt
 | [Docker](https://docs.docker.com/docker-for-mac/install/) | 18.09.1 | `brew install docker` |
 | [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) | Client Version: v1.13.2 | `brew install kubectl` |
 | [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) | v0.30.0 | `brew cask install virtualbox; brew cask install minikube` |
+| [Helm](https://helm.sh) | Client Version: v2.13.0 | `brew install kubernetes-helm` | 
 | Hashicorp [consul](https://www.consul.io/) client | v1.4.0 | `brew install consul` |
 | Hashicorp [vault](https://www.vaultproject.io/) client| v1.0.2 | `brew install vault` |
 | [Golang](https://golang.org/doc/install) | 1.11.5 | `brew install go --cross-compile-common` |

@@ -9,38 +9,41 @@
 function main() {
     local certs_dir="certs"
     local vault_app_name="vault"
+    local vault_ns="default"
     local consul_app_name="consul"
+    local consul_ns="default"
 
+    echo ""
     echo "--- Halting port-forwarding ---"
     pkill kubectl
 
     echo ""
     echo "--- Deleting Vault Deployment ---"
-    k8s_deployment_delete ${vault_app_name}
+    k8s_deployment_delete ${vault_app_name} ${vault_ns}
 
     echo ""
     echo "--- Deleting Vault Service ---"
-    k8s_service_delete ${vault_app_name}
+    k8s_service_delete ${vault_app_name} ${vault_ns}
 
     echo ""
     echo "--- Deleting Vault ConfigMap ---"
-    k8s_configmap_delete ${vault_app_name}
+    k8s_configmap_delete ${vault_app_name} ${vault_ns}
 
     echo ""
     echo "--- Deleting Consul StatefulSet ---"
-    k8s_statefulset_delete ${consul_app_name}
+    k8s_statefulset_delete ${consul_app_name} ${consul_ns}
 
     echo ""
     echo "--- Deleting Consul Service ---"
-    k8s_service_delete ${consul_app_name}
+    k8s_service_delete ${consul_app_name} ${consul_ns}
 
     echo ""
     echo "--- Deleting Consul ConfigMap ---"
-    k8s_configmap_delete ${consul_app_name}
+    k8s_configmap_delete ${consul_app_name} ${consul_ns}
 
     echo ""
     echo "--- Deleting Consul PersistentVolumeClaims ---"
-    k8s_pvc_delete ${consul_app_name}
+    k8s_pvc_delete ${consul_app_name} ${consul_ns}
 
     echo ""
     echo "--- Deleting Secrets ---"

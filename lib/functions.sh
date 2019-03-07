@@ -2,23 +2,33 @@
 
 # DESC: Creates a k8s ConfigMap
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_configmap() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_configmap()"
         exit -2
     fi
 
-    if ! kubectl get configmaps | grep ${1} > /dev/null 2>&1; then
-        kubectl create configmap ${1} --from-file=${1}/config.json
+    # Set namespace
+    if [ -z ${2+x} ]; then
+         local ns="default"
+     else
+         local ns="${2}"
+    fi
+
+    # Run K8s command
+    if ! kubectl --namespace=${ns} get configmaps | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} create configmap ${1} --from-file=${1}/config.json
         success "${1} ConfigMap created"
     else
         info "${1} ConfigMap was already created"
     fi
 
-    # K8s ConfigMap Sanity
-    printf "Testing to see if the ${1} ConfigMap is sane...\n"
-    if ! kubectl describe configmap ${1} > /dev/null 2>&1; then
+    # Check K8s command sanity
+    info "Testing to see if the ${1} ConfigMap is sane"
+    if ! kubectl --namespace=${ns} describe configmap ${1} > /dev/null 2>&1; then
         substep_error "ERROR: can't find the ${1} ConfigMap!"
         exit 1
     else
@@ -26,57 +36,84 @@ function k8s_configmap() {
     fi
 }
 
+
 # DESC: Deletes a k8s ConfigMap
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_configmap_delete() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_configmap_delete()"
         exit -2
     fi
 
-    if kubectl get configmaps | grep ${1} > /dev/null 2>&1; then
-        kubectl delete configmap ${1}
+    # Set namespace
+    if [ -z ${2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run K8s command
+    if kubectl --namespace=${ns} get configmaps | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} delete configmap ${1}
         success "Deleted ConfigMap for ${1}"
     else
         info "ConfigMap for ${1} was already deleted"
     fi
 }
 
+
 # DESC: Creates a k8s Deployment
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_deployment() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_deployment()"
         exit -2
     fi
 
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl apply -f ${1}/deployment.yaml
+    # Set namespace
+    if [ -z ${2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run the K8s command
+    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} apply -f ${1}/deployment.yaml
         success "${1} Deployment applied"
 
         # Wait for pods to launch
-        substep_info "... waiting for ${1} pods to launch"
-        sleep 10
+        substep_info "Waiting for ${1} pods to launch"
+        sleep 15
 
-        POD=$(kubectl get pods -o=name | grep ${1} | sed "s/^.\{4\}//")
+        POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${1} | sed "s/^.\{4\}//")
+
         while true; do
-            STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
+            STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
+
             if [ "$STATUS" == "Running" ]; then
+                substep_info "Pod status is: RUNNING"
                 break
             else
                 substep_info "Pod status is: ${STATUS}"
                 sleep 5
             fi
+
         done
+
     else
         info "${1} Deployment was already applied"
     fi
 
-    # K8s Deployment Sanity
-    printf "Testing to see if the ${1} Deployment is sane...\n"
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+    # Check K8s command sanity
+    info "Testing to see if the ${1} Deployment is sane"
+    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
         substep_error "ERROR: can't find ${1} Pods!"
         exit 1
     else
@@ -84,59 +121,92 @@ function k8s_deployment() {
     fi
 }
 
+
 # DESC: Deletes a k8s Deployment
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_deployment_delete() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_deployment_delete()"
         exit -2
     fi
 
-    if kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl delete deployment ${1}
+    # Set namespace
+    if [ -z ${2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run the K8s command
+    if kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} delete deployment ${1}
         success "Deleted Deployment for ${1}"
     else
         info "Deployment for ${1} was already deleted"
     fi
 }
 
+
 # DESC: Deletes a k8s Secret
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_secret_delete() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_secret_delete()"
         exit -2
     fi
 
-    if kubectl get secret ${1} > /dev/null 2>&1; then
-        kubectl delete secret ${1}
+    # Set namespace
+    if [ -z ${2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run the K8s command
+    if kubectl --namespace=${ns} get secret ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} delete secret ${1}
         success "Deleted Secret for ${1}"
     else
         info "Secret for ${1} was already deleted"
     fi
 }
 
+
 # DESC: Creates a k8s Service
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_service() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_service()"
         exit -2
     fi
 
-    if ! kubectl get service ${1} | grep ${1} > /dev/null 2>&1; then
-        kubectl create -f ${1}/service.yaml
+    # Set namespace
+    if [ -z $2+x} ]; then
+         local ns="default"
+     else
+         local ns="${2}"
+    fi
+
+    # Run K8s command
+    if ! kubectl --namespace=${ns} get service ${1} | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} create -f ${1}/service.yaml
         success "${1} Service created"
     else
         info "${1} Service was already created"
     fi
 
-    # K8s Service Sanity
-    printf "Testing to see if the ${1} Service is sane...\n"
-    if ! kubectl get service ${1} > /dev/null 2>&1; then
+    # Check K8s command sanity
+    info "Testing to see if the ${1} Service is sane"
+    if ! kubectl --namespace=${ns} get service ${1} > /dev/null 2>&1; then
         substep_error "ERROR: can't find the ${1} Service!"
         exit 1
     else
@@ -144,57 +214,85 @@ function k8s_service() {
     fi
 }
 
+
 # DESC: Deletes a k8s Service
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_service_delete() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_service_delete()"
         exit -2
     fi
 
-    if kubectl get service | grep ${1} > /dev/null 2>&1; then
-        printf "... deleting Service for ${1}\n"
-        kubectl delete service ${1}
+    # Set namespace
+    if [ -z $2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run the K8s command
+    if kubectl --namespace=${ns} get service | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} delete service ${1}
         success "Deleted Service for ${1}"
     else
         info "Service for ${1} was already deleted"
     fi
 }
 
+
 # DESC: Creates a k8s StatefulSet
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_statefulset() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_statefulset()"
         exit -2
     fi
 
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl create -f ${1}/statefulset.yaml
+    # Set namespace
+    if [ -z $2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run K8s command
+    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} create -f ${1}/statefulset.yaml > /dev/null 2>&1
         success "${1} StatefulSet created"
 
         # Wait for pods to launch
-        substep_info "... waiting for ${1} pods to launch"
-        sleep 10
-        POD=$(kubectl get pods -o=name | grep ${1}-1 | sed "s/^.\{4\}//")
+        substep_info "Waiting for ${1} pods to launch"
+        sleep 15
+
+        #POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${1}-1 | sed "s/^.\{4\}//")
+        POD=${1}-1
+
         while true; do
-            STATUS=$(kubectl get pods ${POD} -o jsonpath="{.status.phase}")
+            STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
+
             if [ "$STATUS" == "Running" ]; then
+                substep_info "Pod status is: RUNNING"
                 break
             else
                 substep_info "Pod status is: ${STATUS}"
                 sleep 5
             fi
+
         done
+
     else
         info "${1} StatefulSet was already created"
     fi
 
-    # K8s StatefulSet Sanity
+    # Check K8s command sanity
     info "Testing to see if the ${1} StatefulSet is sane..."
-    if ! kubectl get pods | grep ${1} > /dev/null 2>&1; then
+    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
         substep_error "ERROR: can't find ${1} Pods!"
         exit 1
     else
@@ -202,30 +300,43 @@ function k8s_statefulset() {
     fi
 }
 
+
 # DESC: Deletes a k8s StatefulSet
 # ARGS: $1 (REQ): Application Name
+#       $2 (OPT): Namespace
 # OUT: None
 function k8s_statefulset_delete() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 arg for k8s_statefulset_delete()"
         exit -2
     fi
 
-    if kubectl get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl delete statefulset ${1}
+    # Set namespace
+    if [ -z $2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run K8s command
+    if kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} delete statefulset ${1}
         success "Deleted StatefulSet for ${1}"
     else
         info "StatefulSet for ${1} was already deleted"
     fi
 }
 
+
 # DESC: Perform port-forwarding in the background
-# ARGS: #{1} (REQ): pod name
-#       ${2} (REQ): local port
-#       ${3} (REQ): pod port
-#       ${4} (OPT): namespace
+# ARGS: #1 (REQ): pod name
+#       $2 (REQ): local port
+#       $3 (REQ): pod port
+#       $4 (OPT): namespace
 # OUT: None
 function k8s_port_forwarding() {
+    # Validate args
     if [[ $# -lt 3 ]]; then
         error "ERROR: Missing 3 args for k8s_port_forwarding()"
         exit -2
@@ -233,43 +344,56 @@ function k8s_port_forwarding() {
 
     # Set namespace
     if [ -z ${4+x} ]; then
-        local namespace="default"
+        local ns="default"
     else
-        local namespace="${4}"
+        local ns="${4}"
     fi
 
-    if ! ps aux | grep "[k]ubectl --namespace=${namespace} port-forward" | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${namespace} port-forward ${1} ${2}:${3} &
+    # Run K8s command
+    if ! ps aux | grep "[k]ubectl --namespace=${ns} port-forward" | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} port-forward ${1} ${2}:${3} &
         success "${1}: forwarding local port ${2} to pod port ${3}"
     else
         info "${1}: already forwarding local port ${2} to pod port ${3}"
     fi
 
-    # K8s Port-Forwarding Sanity
+    # Check K8s command sanity
     info "Testing to see if ${1}: forwarding pod port ${3} is sane"
-    if ! ps aux | grep "[k]ubectl --namespace=${namespace} port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
+    if ! ps aux | grep "[k]ubectl --namespace=${ns} port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
         substep_error "ERROR: Not Port-Forwarding ${1}: pod port ${3}!"
     else
-        substep_info "Port-Forwarding ${1}: pod port ${3} looks good"
+        substep_info "Port-Forwarding ${1}: port ${3} looks good"
     fi
 }
 
+
 # DESC: Delete persistent volume claims
-# ARGS: $1: (REQ) application name (label)
+# ARGS: $1: (REQ): Application Name (label)
+#       $2: (OPT): Namespace
 # OUT: NONE
 function k8s_pvc_delete() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing 1 args for k8s_pvc_delete()"
         exit -2
     fi
 
-    if kubectl get pvc | grep ${1} > /dev/null 2>&1; then
-        kubectl delete pvc -l app=${1}
+    # Set namespace
+    if [ -z ${2+x} ]; then
+        local ns="default"
+    else
+        local ns="${2}"
+    fi
+
+    # Run the K8s command
+    if kubectl --namespace=${ns} get pvc | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${ns} delete pvc -l app=${1}
         success "Deleted persistent volume claims for ${1}"
     else
         info "Persistent volume claims for ${1} were already deleted"
     fi
 }
+
 
 # DESC: Pretty printing functions inspired from https://github.com/Sajjadhosn/dotfiles
 # ARGS: $1 (REQ): String text message

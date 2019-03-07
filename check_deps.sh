@@ -49,21 +49,24 @@ function check_minikube_running() {
     info "minikube is running"
 }
 
+
 # DESC: Ensure that helm is installed and running in minikube
 # ARGS: NONE
 # OUT: None
 function initialize_helm() {
-    if ! kubectl --namespace kube-system get pods | grep tiller > /dev/null 2>&1; then
+    local ns="kube-system"
+
+    if ! kubectl --namespace=${ns} get pods | grep tiller > /dev/null 2>&1; then
         helm init > /dev/null 2>&1
 
         # check to see if helm is ready
         substep_info "... waiting for Helm pod to launch"
         sleep 10
 
-        POD=$(kubectl --namespace=kube-system get pods -o=name | grep tiller | sed "s/^.\{4\}//")
+        POD=$(kubectl --namespace=${ns} get pods -o=name | grep tiller | sed "s/^.\{4\}//")
         while true; do
-            STATUS=$(kubectl --namespace=kube-system get pods ${POD} -o jsonpath="{.status.phase}")
-            if [ "$STATUS" == "Running" ]; then
+            STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
+            if [ "${STATUS}" == "Running" ]; then
                 break
             else
                 substep_info "Helm pod status is: ${STATUS}"
@@ -71,16 +74,18 @@ function initialize_helm() {
             fi
         done
 
-        success "helm has been installed on minikube"
+        success "Helm has been installed on minikube"
     else
-        info "helm is already installed on minikube"
+        info "Helm is already installed on minikube"
     fi
 }
+
 
 # DESC: MAIN PROCESSING
 # ARGS: None
 # OUT: None
 function main() {
+    echo ""
     echo "--- Checking for required binaries ---"
     local deps=(
         "docker"
@@ -104,7 +109,7 @@ function main() {
     check_minikube_running
 
     echo ""
-    echo "--- Checking for helm initialization ---"
+    echo "--- Checking for Helm initialization ---"
     initialize_helm
 }
 

@@ -6,11 +6,13 @@
 # ARGS: $1 (REQ): Name of the dir to be created
 # OUT: None
 function make_dirs() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing arg for make_dirs()"
         exit -2
     fi
 
+    # Create dirs
     if [ ! -d ./$1 ]; then
         mkdir -p ./$1
         success "$1 directory created"
@@ -26,11 +28,13 @@ function make_dirs() {
 #       $2 (REQ) - Config file (JSON) path
 # OUT: None
 function create_ca() {
+    # Validate args
     if [[ $# -lt 2 ]]; then
         error "ERROR: Missing 2 args for create_ca()"
         exit -2
     fi
 
+    # Create CA
     if [ ! -f ./${1}.pem ]; then
         cfssl gencert -initca ./${2} | cfssljson -bare ./${1}
         success "${1} Certificate Authority created"
@@ -47,11 +51,13 @@ function create_ca() {
 #       $3 (REQ): Cert file name
 # OUT: None
 function create_certs() {
+    # Validate args
     if [[ $# -lt 3 ]]; then
         printf "\nERROR: Missing 3 args for create_certs()\n"
         exit -2
     fi
 
+    # Create keys and certs
     if [ ! -f ./${1}/${3}.pem ]; then
         cfssl gencert \
           -ca=${1}/ca.pem \
@@ -76,6 +82,7 @@ function main() {
     local consul_cert="consul"
     local vault_cert="vault"
 
+    echo ""
     echo "--- Creating certificate directory ---"
     make_dirs ${certs_dir}
 

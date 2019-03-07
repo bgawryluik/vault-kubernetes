@@ -1,6 +1,6 @@
 # Hashicorp's Vault using Kubernetes
-## Running Vault and Consul on Kubernetes
-Based on this blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0).
+## Running Vault (and Consul and Prometheus and Grafana) on Kubernetes
+Based on this blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0). This started as project to simply run Vault in Kubernetes. It's slowly morphing into a K8s development platform that includes Vault, Consul, Prometheus, and Grafana.
 
 **NOTE**: these instuctions assume that your workstation is a Mac. For example, this installation was tested on a 2017 MacBook (3.1GHz Intel Core I7 with 16GB of memory) running macOS Mojave (v10.14.2).
 
@@ -12,6 +12,7 @@ It is much easier to follow these instruction if you already have [Homebrew](htt
 | [Docker](https://docs.docker.com/docker-for-mac/install/) | 18.09.1 | `brew install docker` |
 | [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) | Client Version: v1.13.2 | `brew install kubectl` |
 | [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) | v0.30.0 | `brew cask install virtualbox; brew cask install minikube` |
+| [Helm](https://helm.sh) | Client Version: v2.13.0 | `brew install kubernetes-helm` | 
 | Hashicorp [consul](https://www.consul.io/) client | v1.4.0 | `brew install consul` |
 | Hashicorp [vault](https://www.vaultproject.io/) client| v1.0.2 | `brew install vault` |
 | [Golang](https://golang.org/doc/install) | 1.11.5 | `brew install go --cross-compile-common` |

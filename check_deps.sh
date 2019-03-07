@@ -49,15 +49,34 @@ function check_minikube_running() {
     info "minikube is running"
 }
 
+
+# DESC: Ensure that helm is installed and running in minikube
+# ARGS: NONE
+# OUT: None
+function initialize_helm() {
+    local ns="kube-system"
+
+    if ! kubectl --namespace=${ns} get pods | grep tiller > /dev/null 2>&1; then
+        substep_info "...this may take a few moments"
+        helm init --wait > /dev/null 2>&1
+        success "Helm has been installed on minikube"
+    else
+        info "Helm is already installed on minikube"
+    fi
+}
+
+
 # DESC: MAIN PROCESSING
 # ARGS: None
 # OUT: None
 function main() {
+    echo ""
     echo "--- Checking for required binaries ---"
     local deps=(
         "docker"
         "minikube"
         "kubectl"
+        "helm"
         "consul"
         "vault"
         "go"
@@ -73,6 +92,10 @@ function main() {
     echo "--- Checking for required services ---"
     check_docker_running
     check_minikube_running
+
+    echo ""
+    echo "--- Checking for Helm initialization ---"
+    initialize_helm
 }
 
 main

@@ -1,14 +1,17 @@
 SHELL = /bin/bash
 
-.PHONY: workstation certs consul vault clean destroy
+.PHONY: workstation certs monitoring consul vault clean destroy
 
-workstation: deps certs consul vault
+workstation: deps certs monitoring consul vault
 
 deps:
 	./check_deps.sh
 
 certs: 
 	./create_certs.sh
+
+monitoring:
+	./deploy_monitoring.sh
 
 consul:  
 	./deploy_consul.sh
@@ -20,4 +23,5 @@ clean:
 	./cleanup.sh
 	
 destroy: clean
+	$(info --- Deleting Minikube ---)
 	minikube delete

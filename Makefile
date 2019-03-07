@@ -23,4 +23,5 @@ clean:
 	./cleanup.sh
 	
 destroy: clean
+	$(info --- Deleting Minikube ---)
 	minikube delete

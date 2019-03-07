@@ -57,23 +57,8 @@ function initialize_helm() {
     local ns="kube-system"
 
     if ! kubectl --namespace=${ns} get pods | grep tiller > /dev/null 2>&1; then
-        helm init > /dev/null 2>&1
-
-        # check to see if helm is ready
-        substep_info "... waiting for Helm pod to launch"
-        sleep 10
-
-        POD=$(kubectl --namespace=${ns} get pods -o=name | grep tiller | sed "s/^.\{4\}//")
-        while true; do
-            STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
-            if [ "${STATUS}" == "Running" ]; then
-                break
-            else
-                substep_info "Helm pod status is: ${STATUS}"
-                sleep 5
-            fi
-        done
-
+        substep_info "...this may take a few moments"
+        helm init --wait > /dev/null 2>&1
         success "Helm has been installed on minikube"
     else
         info "Helm is already installed on minikube"

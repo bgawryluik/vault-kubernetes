@@ -65,7 +65,35 @@ function k8s_configmap_delete() {
 }
 
 
-# DESC: Creates a k8s Deployment
+# DESC: Create a K8s CRD
+# ARGS: TODO
+# OUT: NONE
+function k8s_crd() {
+    echo "TODO"
+}
+
+
+# DESC: Deletes K8s CRD
+# ARGS: $1 (REQ): CRD name
+# OUT: NONE
+function k8s_crd_delete() {
+    # Validate args
+    if [[ $# -lt 1 ]]; then
+        error "ERROR: Missing arg k8s_crd_deletefor ()"
+        exit -2
+    fi
+
+    # Run K8s command
+    if kubectl get crds | grep ${1} > /dev/null 2>&1; then
+        kubectl delete crd ${1} > /dev/null 2>&1
+        success "Deleted CRD: ${1}"
+    else
+        info "CRD: ${1} was already deleted"
+    fi
+}
+
+
+# DESC: Creates a K8s Deployment
 # ARGS: $1 (REQ): Application Name
 #       $2 (OPT): Namespace
 # OUT: None
@@ -122,7 +150,7 @@ function k8s_deployment() {
 }
 
 
-# DESC: Deletes a k8s Deployment
+# DESC: Deletes a K8s Deployment
 # ARGS: $1 (REQ): Application Name
 #       $2 (OPT): Namespace
 # OUT: None
@@ -150,7 +178,36 @@ function k8s_deployment_delete() {
 }
 
 
-# DESC: Deletes a k8s Secret
+# DESC: Creates a K8s namespace
+# ARGS: TODO
+# OUT: NONE
+function k8s_namespace() {
+    echo "TODO"
+}
+
+
+# DESC: Deletes a K8s namespace
+# ARGS: $1 (REQ): Namespace name
+# OUT: NONE
+function k8s_namespace_delete() {
+    # Validate args
+    if [[ $# -lt 1 ]]; then
+        error "ERROR: Missing arg for k8s_namespace_delete()"
+        exit -2
+    fi
+
+    # Run the K8s command
+    if kubectl get namespaces | grep ${1} > /dev/null 2>&1; then
+        substep_info "...this could take a few moments"
+        kubectl delete namespace ${1} > /dev/null 2>&1
+        success "Deleted Namespace ${1}"
+    else
+        info "Namespace ${1} was already deleted"
+    fi
+}
+
+
+# DESC: Deletes a K8s Secret
 # ARGS: $1 (REQ): Application Name
 #       $2 (OPT): Namespace
 # OUT: None

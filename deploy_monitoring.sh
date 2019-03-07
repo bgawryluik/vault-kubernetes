@@ -6,17 +6,18 @@
 # ARGS: $1 (REQ): Helm application release name
 #       $2 (REQ): Helm operator name
 #       $3 (REQ): Namespace
+#       $4 (REQ): values.yaml file path
 # OUT: None
 function install_stable_helm_operator() {
     # Validate args
-    if [[ $# -lt 3 ]]; then
-        error "ERROR: Missing 3 args for install_stable_helm_operator()"
+    if [[ $# -lt 4 ]]; then
+        error "ERROR: Missing 4 args for install_stable_helm_operator()"
         exit -2
     fi
 
     # Run Helm command
     if ! helm ls --all | grep ${1} > /dev/null 2>&1; then
-        helm install --name ${1} --namespace ${3} stable/${2} > /dev/null 2>&1
+        helm install --name ${1} --namespace ${3} -f ${4} stable/${2} > /dev/null 2>&1
         success "helm operator: ${1} - ${2} has been installed"
     else
         info "helm operator: ${1} - ${2} is already installed"
@@ -57,11 +58,12 @@ function main() {
     local release="minikube"
     local name="prometheus-operator"
     local ns="monitoring"
+    local prom_values="prometheus/values.yaml"
     local grafana_port=3000
 
     echo ""
     echo "--- Installing the Helm Prometheus Operator ---"
-    install_stable_helm_operator ${release} ${name} ${ns}
+    install_stable_helm_operator ${release} ${name} ${ns} ${prom_values}
 
     POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${release}-grafana | sed "s/^.\{4\}//")
     echo ""

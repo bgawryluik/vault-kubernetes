@@ -223,6 +223,7 @@ function k8s_statefulset_delete() {
 # ARGS: #{1} (REQ): pod name
 #       ${2} (REQ): local port
 #       ${3} (REQ): pod port
+#       ${4} (OPT): namespace
 # OUT: None
 function k8s_port_forwarding() {
     if [[ $# -lt 3 ]]; then
@@ -230,8 +231,15 @@ function k8s_port_forwarding() {
         exit -2
     fi
 
-    if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} > /dev/null 2>&1; then
-        kubectl port-forward ${1} ${2}:${3} &
+    # Set namespace
+    if [ -z ${4+x} ]; then
+        local namespace="default"
+    else
+        local namespace="${4}"
+    fi
+
+    if ! ps aux | grep "[k]ubectl --namespace=${namespace} port-forward" | grep ${1} > /dev/null 2>&1; then
+        kubectl --namespace=${namespace} port-forward ${1} ${2}:${3} &
         success "${1}: forwarding local port ${2} to pod port ${3}"
     else
         info "${1}: already forwarding local port ${2} to pod port ${3}"
@@ -239,7 +247,7 @@ function k8s_port_forwarding() {
 
     # K8s Port-Forwarding Sanity
     info "Testing to see if ${1}: forwarding pod port ${3} is sane"
-    if ! ps aux | grep "[k]ubectl port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
+    if ! ps aux | grep "[k]ubectl --namespace=${namespace} port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
         substep_error "ERROR: Not Port-Forwarding ${1}: pod port ${3}!"
     else
         substep_info "Port-Forwarding ${1}: pod port ${3} looks good"

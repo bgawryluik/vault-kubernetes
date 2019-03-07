@@ -61,6 +61,7 @@ function main() {
     echo "--- Creating ${app_name} StatefulSet ---"
     k8s_statefulset ${app_name}
 
+    echo ""
     echo "--- Forwarding port ${consul_port} for ${consul_pod} ---"
     k8s_port_forwarding ${consul_pod} ${consul_port} ${consul_port}
 }

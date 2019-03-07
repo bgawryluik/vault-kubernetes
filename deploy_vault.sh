@@ -57,9 +57,9 @@ function main() {
     echo "--- Creating ${app_name} Deployment ---"
     k8s_deployment ${app_name}
 
+    local vault_pod=$(kubectl get pods -o=name | grep vault | sed "s/^.\{4\}//")
     echo ""
     echo ""--- Forwarding port ${vault_port} for ${vault_pod} ---
-    local vault_pod=$(kubectl get pods -o=name | grep vault | sed "s/^.\{4\}//")
     k8s_port_forwarding ${vault_pod} ${vault_port} ${vault_port}
 }
 

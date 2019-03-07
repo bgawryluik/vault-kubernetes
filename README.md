@@ -1,6 +1,6 @@
 # Hashicorp's Vault using Kubernetes
 ## Running Vault (and Consul and Prometheus and Grafana) on Kubernetes
-Based on this blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0). This started as project to simply run Vault in Kubernetes. It's slowly morphing into a K8s development platform that includes Vault, Consul, Prometheus, and Grafana.
+Based on this blog [post](https://testdriven.io/blog/running-vault-and-consul-on-kubernetes/) create by [Michael Herman](https://github.com/mjhea0). This started as project to simply run Vault in Kubernetes. It's slowly morphing into a K8s development platform that includes Vault, Consul, [Prometheus](https://prometheus.io/), and [Grafana](https://grafana.com/).
 
 **NOTE**: these instuctions assume that your workstation is a Mac. For example, this installation was tested on a 2017 MacBook (3.1GHz Intel Core I7 with 16GB of memory) running macOS Mojave (v10.14.2).
 
@@ -102,6 +102,20 @@ Key       Value
 mysecret  mysecretvalue
 ```
 
+## Monitoring Your Cluster
+
+To monitor this Kubernetes cluster, navigate to the [Grafana login page](http://localhost:3000). The default access credentials are:  
+```
+Username: admin
+Password: prom-operator
+```
+
+A second method used for monitoring is to launch the Kubernetes dashboard. To run the dashboard, type the following command into your terminal:  
+```
+$ minikube dashboard
+```
+
+Your default web browser should launch and you should be immediately transported to the dashboard webpage.
 
 ## Tearing Everything Down
 The easiest way to remove the `kubernetes-vault` cluster is to stop port-forwarding and then delete the whole works as follows:  

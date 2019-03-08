@@ -22,10 +22,10 @@ function gossip_encryption_key() {
     fi
 
     # Run K8s command
-    if ! kubectl --namespace=${ns} get secrets | grep ${2} > /dev/null 2>&1; then
+    if ! kubectl get secrets -n ${ns} | grep ${2} > /dev/null 2>&1; then
         export GOSSIP_ENCRYPTION_KEY=$(consul keygen)
 
-        kubectl --namespace=${ns} create secret generic ${2} \
+        kubectl create secret generic ${2} -n ${ns} \
             --from-literal="gossip-encryption-key=${GOSSIP_ENCRYPTION_KEY}" \
             --from-file=${1}/ca.pem \
             --from-file=${1}/${2}.pem \
@@ -38,7 +38,7 @@ function gossip_encryption_key() {
 
     # Check K8s command sanity
     info "Testing to see if the Gossip Encryption Key is sane"
-    if ! kubectl describe secret ${2} > /dev/null 2>&1; then
+    if ! kubectl describe secret ${2} -n ${ns} > /dev/null 2>&1; then
         substep_error "ERROR: can't find the Gossip Encryption Key!"
         exit 1
     else

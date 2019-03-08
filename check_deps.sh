@@ -6,11 +6,13 @@
 # ARGS: $1 (REQ): Name of the target binary
 # OUT: None
 function check_binary() {
+    # Validate args
     if [[ $# -lt 1 ]]; then
         error "ERROR: Missing arg for check_binary()"
         exit -2
     fi
 
+    # Run commands
     if ! command -v "${1}"; then
         error "ERROR: Can't find ${1} in your PATH"
         error "Please install ${1}"
@@ -21,14 +23,15 @@ function check_binary() {
 }
 
 
-# DESC: Ensure that docker is running (all platforms)
+# DESC: Ensure that docker is running (Not sure if it works on Windows)
 # ARGS: None
 # OUT: None
 function check_docker_running() {
-    doc_running=$(curl -s --unix-socket /var/run/docker.sock http://ping > /dev/null)
-    status=$?
+    # From https://gist.github.com/peterver/ca2d60abc015d334e1054302265b27d9
+    docker_ping=$(curl -s --unix-socket /var/run/docker.sock http://ping > /dev/null)
+    STATUS=$?
 
-    if [ "${status}" == "7" ]; then
+    if [ "${STATUS}" == "7" ]; then
         error "ERROR: The docker service is NOT running. Please start docker"
         exit -1
     fi
@@ -56,7 +59,7 @@ function check_minikube_running() {
 function initialize_helm() {
     local ns="kube-system"
 
-    if ! kubectl --namespace=${ns} get pods | grep tiller > /dev/null 2>&1; then
+    if ! kubectl get pods -n ${ns} | grep tiller > /dev/null 2>&1; then
         substep_info "...this may take a few moments"
         helm init --wait > /dev/null 2>&1
         success "Helm has been installed on minikube"

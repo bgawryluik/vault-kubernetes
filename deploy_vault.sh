@@ -22,8 +22,8 @@ function store_k8s_certs() {
     fi
 
     # Run K8s Command
-    if ! kubectl --namespace=${ns} get secrets | grep ${2} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} create secret generic ${2} \
+    if ! kubectl get secrets -n ${ns} | grep ${2} > /dev/null 2>&1; then
+        kubectl create secret generic ${2} -n ${ns} \
           --from-file=${1}/ca.pem \
           --from-file=${1}/${2}.pem \
           --from-file=${1}/${2}-key.pem
@@ -35,7 +35,7 @@ function store_k8s_certs() {
 
     # Check K8s command sanity
     info "Testing to see if the ${2} Secret is sane"
-    if ! kubectl --namespace=${ns} describe secret ${2} > /dev/null 2>&1; then
+    if ! kubectl describe secret ${2} -n ${ns} > /dev/null 2>&1; then
         substep_error "ERROR: can't find the ${2} Secret!"
         exit 1
     else

@@ -19,8 +19,8 @@ function k8s_configmap() {
     fi
 
     # Run K8s command
-    if ! kubectl --namespace=${ns} get configmaps | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} create configmap ${1} --from-file=${1}/config.json
+    if ! kubectl get configmaps -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl create configmap ${1} -n ${ns} --from-file=${1}/config.json
         success "${1} ConfigMap created"
     else
         info "${1} ConfigMap was already created"
@@ -28,7 +28,7 @@ function k8s_configmap() {
 
     # Check K8s command sanity
     info "Testing to see if the ${1} ConfigMap is sane"
-    if ! kubectl --namespace=${ns} describe configmap ${1} > /dev/null 2>&1; then
+    if ! kubectl describe configmap ${1} -n ${ns} > /dev/null 2>&1; then
         substep_error "ERROR: can't find the ${1} ConfigMap!"
         exit 1
     else
@@ -56,8 +56,8 @@ function k8s_configmap_delete() {
     fi
 
     # Run K8s command
-    if kubectl --namespace=${ns} get configmaps | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} delete configmap ${1}
+    if kubectl get configmaps -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl delete configmap -n ${ns} ${1}
         success "Deleted ConfigMap for ${1}"
     else
         info "ConfigMap for ${1} was already deleted"
@@ -79,7 +79,7 @@ function k8s_crd() {
 function k8s_crd_delete() {
     # Validate args
     if [[ $# -lt 1 ]]; then
-        error "ERROR: Missing arg k8s_crd_deletefor ()"
+        error "ERROR: Missing arg k8s_crd_deletefor()"
         exit -2
     fi
 
@@ -112,18 +112,18 @@ function k8s_deployment() {
     fi
 
     # Run the K8s command
-    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} apply -f ${1}/deployment.yaml
+    if ! kubectl get pods -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl apply -n ${ns} -f ${1}/deployment.yaml
         success "${1} Deployment applied"
 
         # Wait for pods to launch
         substep_info "Waiting for ${1} pods to launch"
         sleep 15
 
-        POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${1} | sed "s/^.\{4\}//")
+        POD=$(kubectl get pods -n ${ns} -o=name | grep ${1} | sed "s/^.\{4\}//")
 
         while true; do
-            STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
+            STATUS=$(kubectl get pods ${POD} -n ${ns} -o jsonpath="{.status.phase}")
 
             if [ "$STATUS" == "Running" ]; then
                 substep_info "Pod status is: RUNNING"
@@ -141,7 +141,7 @@ function k8s_deployment() {
 
     # Check K8s command sanity
     info "Testing to see if the ${1} Deployment is sane"
-    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
+    if ! kubectl get pods -n ${ns} | grep ${1} > /dev/null 2>&1; then
         substep_error "ERROR: can't find ${1} Pods!"
         exit 1
     else
@@ -169,8 +169,8 @@ function k8s_deployment_delete() {
     fi
 
     # Run the K8s command
-    if kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} delete deployment ${1}
+    if kubectl get pods -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl delete deployment ${1} -n ${ns} > /dev/null 2>&1
         success "Deleted Deployment for ${1}"
     else
         info "Deployment for ${1} was already deleted"
@@ -226,8 +226,8 @@ function k8s_secret_delete() {
     fi
 
     # Run the K8s command
-    if kubectl --namespace=${ns} get secret ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} delete secret ${1}
+    if kubectl get secret ${1} -n ${ns} > /dev/null 2>&1; then
+        kubectl delete secret ${1} -n ${ns} > /dev/null 2>&1
         success "Deleted Secret for ${1}"
     else
         info "Secret for ${1} was already deleted"
@@ -254,8 +254,8 @@ function k8s_service() {
     fi
 
     # Run K8s command
-    if ! kubectl --namespace=${ns} get service ${1} | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} create -f ${1}/service.yaml
+    if ! kubectl get service ${1} -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl create -n ${ns} -f ${1}/service.yaml > /dev/null 2>&1
         success "${1} Service created"
     else
         info "${1} Service was already created"
@@ -263,7 +263,7 @@ function k8s_service() {
 
     # Check K8s command sanity
     info "Testing to see if the ${1} Service is sane"
-    if ! kubectl --namespace=${ns} get service ${1} > /dev/null 2>&1; then
+    if ! kubectl get service ${1} -n ${ns} > /dev/null 2>&1; then
         substep_error "ERROR: can't find the ${1} Service!"
         exit 1
     else
@@ -291,8 +291,8 @@ function k8s_service_delete() {
     fi
 
     # Run the K8s command
-    if kubectl --namespace=${ns} get service | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} delete service ${1}
+    if kubectl get service -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl delete service ${1} -n ${ns} > /dev/null 2>&1
         success "Deleted Service for ${1}"
     else
         info "Service for ${1} was already deleted"
@@ -319,19 +319,19 @@ function k8s_statefulset() {
     fi
 
     # Run K8s command
-    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} create -f ${1}/statefulset.yaml > /dev/null 2>&1
+    if ! kubectl get pods -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl create -n ${ns} -f ${1}/statefulset.yaml > /dev/null 2>&1
         success "${1} StatefulSet created"
 
         # Wait for pods to launch
         substep_info "Waiting for ${1} pods to launch"
         sleep 15
 
-        #POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${1}-1 | sed "s/^.\{4\}//")
+        #POD=$(kubectl get pods -n ${ns} -o=name | grep ${1}-1 | sed "s/^.\{4\}//")
         POD=${1}-1
 
         while true; do
-            STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
+            STATUS=$(kubectl get pods ${POD} -n ${ns} -o jsonpath="{.status.phase}")
 
             if [ "$STATUS" == "Running" ]; then
                 substep_info "Pod status is: RUNNING"
@@ -349,7 +349,7 @@ function k8s_statefulset() {
 
     # Check K8s command sanity
     info "Testing to see if the ${1} StatefulSet is sane..."
-    if ! kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
+    if ! kubectl get pods -n ${ns} | grep ${1} > /dev/null 2>&1; then
         substep_error "ERROR: can't find ${1} Pods!"
         exit 1
     else
@@ -377,8 +377,8 @@ function k8s_statefulset_delete() {
     fi
 
     # Run K8s command
-    if kubectl --namespace=${ns} get pods | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} delete statefulset ${1}
+    if kubectl get pods -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        kubectl delete statefulset ${1} -n ${ns} > /dev/null 2>&1
         success "Deleted StatefulSet for ${1}"
     else
         info "StatefulSet for ${1} was already deleted"
@@ -407,8 +407,8 @@ function k8s_port_forwarding() {
     fi
 
     # Run K8s command
-    if ! ps aux | grep "[k]ubectl --namespace=${ns} port-forward" | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} port-forward ${1} ${2}:${3} &
+    if ! ps aux | grep "[k]ubectl -n ${ns} port-forward" | grep ${1} > /dev/null 2>&1; then
+        kubectl -n ${ns} port-forward ${1} ${2}:${3} &
         success "${1}: forwarding local port ${2} to pod port ${3}"
     else
         info "${1}: already forwarding local port ${2} to pod port ${3}"
@@ -416,7 +416,7 @@ function k8s_port_forwarding() {
 
     # Check K8s command sanity
     info "Testing to see if ${1}: forwarding pod port ${3} is sane"
-    if ! ps aux | grep "[k]ubectl --namespace=${ns} port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
+    if ! ps aux | grep "[k]ubectl -n ${ns} port-forward" | grep ${1} | grep ${2} > /dev/null 2>&1; then
         substep_error "ERROR: Not Port-Forwarding ${1}: pod port ${3}!"
     else
         substep_info "Port-Forwarding ${1}: port ${3} looks good"
@@ -443,8 +443,9 @@ function k8s_pvc_delete() {
     fi
 
     # Run the K8s command
-    if kubectl --namespace=${ns} get pvc | grep ${1} > /dev/null 2>&1; then
-        kubectl --namespace=${ns} delete pvc -l app=${1}
+    if kubectl get pvc -n ${ns} | grep ${1} > /dev/null 2>&1; then
+        substep_info "...this could take a few moments"
+        kubectl delete pvc -n ${ns} -l app=${1} > /dev/null 2>&1
         success "Deleted persistent volume claims for ${1}"
     else
         info "Persistent volume claims for ${1} were already deleted"

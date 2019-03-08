@@ -34,10 +34,10 @@ function install_stable_helm_operator() {
 
     # Wait for the Grafana pod...
     info "Checking to see if the Grafana pod is running"
-    POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${release}-grafana | sed "s/^.\{4\}//")
+    POD=$(kubectl get pods -n ${ns} -o=name | grep ${release}-grafana | sed "s/^.\{4\}//")
 
     while true; do
-        STATUS=$(kubectl --namespace=${ns} get pods ${POD} -o jsonpath="{.status.phase}")
+        STATUS=$(kubectl get pods ${POD} -n ${ns} -o jsonpath="{.status.phase}")
 
         if [ "$STATUS" == "Running" ]; then
             substep_info "Pod status is: RUNNING"
@@ -65,7 +65,7 @@ function main() {
     echo "--- Installing the Helm Prometheus Operator ---"
     install_stable_helm_operator ${release} ${name} ${ns} ${prom_values}
 
-    POD=$(kubectl --namespace=${ns} get pods -o=name | grep ${release}-grafana | sed "s/^.\{4\}//")
+    POD=$(kubectl get pods -n ${ns} -o=name | grep ${release}-grafana | sed "s/^.\{4\}//")
     echo ""
     echo ""--- Forwarding port ${grafana_port} for ${POD} ---
     k8s_port_forwarding ${POD} ${grafana_port} ${grafana_port} ${ns}
